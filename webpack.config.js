@@ -7,8 +7,8 @@ module.exports = {
   target: 'node',
   entry: {
     lte: ['babel-polyfill', './lte/index.js'],
-    client: './client/index.js',
-    db: './utils/db.js'
+    client: ['babel-polyfill','./client/index.js'],
+    db: ['babel-polyfill','./utils/db.js']
   },
   output: {
     path: path.resolve(__dirname, 'dist'),

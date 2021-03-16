@@ -16,7 +16,7 @@ class TCPClient {
          * @private
          */
         this._client = client;
-        this.remoteAddress = this._client._address.address;
+        this.remoteAddress = this._client.address();
         this.authenticated = false;
         this._initClient();
         // 风扇板子暂时没有心跳 临时解决方案

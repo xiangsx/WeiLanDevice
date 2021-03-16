@@ -2,7 +2,6 @@
     "plugins": [
         "syntax-dynamic-import",
         "@babel/plugin-proposal-class-properties",
-        "transform-runtime"
     ],
     "presets": [
         [

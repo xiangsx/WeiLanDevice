@@ -11,7 +11,7 @@ module.exports = {
     db: './utils/db.js'
   },
   output: {
-    path: path.resolve(__dirname, '../dist'),
+    path: path.resolve(__dirname, 'dist'),
     filename: '[name].js'
   },
   plugins: [new webpack.ProgressPlugin()],

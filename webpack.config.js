@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
-  mode: 'production',
+  mode: 'development',
   target: 'node',
   entry: {
     lte: './lte/index.js',

@@ -1,0 +1,38 @@
+{
+  "my-webpack-project": {
+    "configuration": {
+      "config": {
+        "configName": "config",
+        "topScope": [
+          "const path = require('path');",
+          "const webpack = require('webpack');",
+          "\n"
+        ],
+        "webpackOptions": {
+          "mode": "'development'",
+          "entry": {
+            "lte": "'./lte/index.js'",
+            "client": "'./client/index.js'",
+            "db": "'./utils/db.js'"
+          },
+          "plugins": [
+            "new webpack.ProgressPlugin()"
+          ],
+          "module": {
+            "rules": [
+              {
+                "test": "/\\.(js|jsx)$/",
+                "include": [
+                  "path.resolve(__dirname, 'lte')",
+                  "path.resolve(__dirname, 'client')",
+                  "path.resolve(__dirname, 'utils')"
+                ],
+                "loader": "'babel-loader'"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

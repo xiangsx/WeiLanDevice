@@ -23,7 +23,6 @@ import {
     SysModeMap,
 } from './define/LTEProto';
 // eslint-disable-next-line no-unused-vars
-import { EnumEventName } from './src/defines/event';
 import {
     BAND_LIMIT_MAP,
     DEFAULT_AIR_SYNC_FAILED_RETRY_TIMES,

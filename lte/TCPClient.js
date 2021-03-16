@@ -1,4 +1,3 @@
-import {Buffer} from 'buffer';
 import {FRAME_HEAD_LE_ARR} from './define/LTEProto'
 import {FIX_HEAD_ARR} from "./define/IotProto";
 import {createNewLteCtrl} from './LTEControllers'

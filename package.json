@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/xiangsx/WeiLanDevice#readme",
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
     "esm": "^3.2.25",
     "moment": "^2.29.1",
     "socket.io-client": "^2.1.1",

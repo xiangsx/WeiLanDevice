@@ -6,7 +6,7 @@ module.exports = {
   mode: 'production',
   target: 'node',
   entry: {
-    lte: './lte/index.js',
+    lte: ['babel-polyfill', './lte/index.js'],
     client: './client/index.js',
     db: './utils/db.js'
   },

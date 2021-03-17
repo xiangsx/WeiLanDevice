@@ -1427,17 +1427,12 @@ export class LTEControllers {
             console.warn(`client [${this.host}] disconnected, cannot send data to client`);
             return;
         }
-        if (Buffer.isBuffer(data)) {
-            if (this._lteClient) {
-                this._lteClient.sendData(data, () => {
-                    console.debug(`send data to client [${this.host}] successfully , buffer:${data.toString('hex')}`);
-                });
-                // eslint-disable-next-line
-                return true;
-            }
-        }
-        else {
-            console.warn(`you are trying to send invalid type , buffer:${JSON.stringify(data)}`);
+        if (this._lteClient) {
+            this._lteClient.sendData(data, () => {
+                console.debug(`send data to client [${this.host}] successfully , buffer:${data.toString('hex')}`);
+            });
+            // eslint-disable-next-line
+            return true;
         }
     }
 

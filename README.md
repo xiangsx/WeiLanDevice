@@ -1,15 +1,18 @@
-# 🚀 Welcome to your new awesome project!
+### 1. 开发
+````bash
+#克隆项目之后
+cd WeiLanDevice
+yarn
+yarn start #启动lte进程
+````
 
-This project has been created using **webpack scaffold**, you can now run
+### 2. 部署发布
 
-```
-npm run build
-```
-
-or
-
-```
+```bash
 yarn build
+#打包dist和package.json文件
+#上传到板卡
+cd WeiLanDevice
+yarn prod-install #只安装运行时依赖
+yarn prod-start-lte #启动lte进程
 ```
-
-to bundle your application

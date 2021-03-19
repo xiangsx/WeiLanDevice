@@ -30,7 +30,7 @@ class WSClient {
         });
     }
 
-    emitAsync(event, data, cb) {
+    emitAsync(event, data) {
         return new Promise(resolve => {
             this.emit(event, data, resolve);
         });

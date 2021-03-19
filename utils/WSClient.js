@@ -47,16 +47,16 @@ class WSClient {
         }
         const result = {
             code: EnumErrorDefine.SUCCESS,
-            msg: ErrorMap.get(EnumErrorDefine.SUCCESS),
+            msg: ErrorMap.get(EnumErrorDefine.SUCCESS).msg,
             data
         };
         if (ErrorMap.has(code)) {
             result.code = code;
-            result.msg = ErrorMap.get(code);
+            result.msg = ErrorMap.get(code).msg;
         }
         else {
             result.code = EnumErrorDefine.ERR_UNKNOWN;
-            result.msg = ErrorMap.get(EnumErrorDefine.ERR_UNKNOWN);
+            result.msg = ErrorMap.get(EnumErrorDefine.ERR_UNKNOWN).msg;
         }
         res(result);
     }

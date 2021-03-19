@@ -1,43 +1,68 @@
-const io = require('socket.io-client')
+import io from 'socket.io-client';
+import {EnumErrorDefine, ErrorMap} from '../define/error'
 
 class WSClient {
-    constructor(host, namespace, key, options = {}) {
+    constructor(host, namespace, options = {}) {
         this.host = host;
         this.namespace = namespace;
         this.url = `ws://${host}${namespace}`;
-        this.key = key;
         this.socket = io(this.url, {
             autoConnect: true,
             withCredentials: true,
             reconnection: true,
             ...options
         });
-        this.initEvent();
     }
 
-    initEvent() {
-        this.socket.on('connect', async () => {
+    init = (register) => {
+        this.socket.on('connect', () => {
             console.log(`${this.url} connect`);
-            const res = await this.emitAsync('register', {deviceKey:this.key});
-            console.log(res);
+            register();
         });
     }
 
-    emit(event, data, cb) {
+    emit = (event, data, cb) => {
         this.socket.emit(event, data, (...rest) => {
             console.log(`[${this.url}]:emit [${event}] data:[${JSON.stringify(data)}] res:[${JSON.stringify(...rest)}]`);
             cb(...rest);
         });
     }
 
-    emitAsync(event, data) {
+    emitAsync = (event, data) => {
         return new Promise(resolve => {
             this.emit(event, data, resolve);
         });
     }
+
+    listen = (event, handle) => {
+        this.socket.on(event, (data, res) => {
+            console.log(`ltews listen event[${event}] data[${JSON.stringify(data)}]`);
+            handle(data, res);
+        });
+    }
+
+    wrap = (res, data, code = EnumErrorDefine.SUCCESS) => {
+        if (typeof res !== "function") {
+            return;
+        }
+        const result = {
+            code: EnumErrorDefine.SUCCESS,
+            msg: ErrorMap.get(EnumErrorDefine.SUCCESS),
+            data
+        };
+        if (ErrorMap.has(code)) {
+            result.code = code;
+            result.msg = ErrorMap.get(code);
+        }
+        else {
+            result.code = EnumErrorDefine.ERR_UNKNOWN;
+            result.msg = ErrorMap.get(EnumErrorDefine.ERR_UNKNOWN);
+        }
+        res(result);
+    }
 }
 
-module.exports = WSClient;
+export default WSClient;
 
 if (require.main === module) {
     new WSClient('127.0.0.1', '/lte','asdjksahdkjsahd')

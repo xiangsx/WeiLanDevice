@@ -1,5 +1,5 @@
-import { EnumCmd, EnumFunCode, EnumIotStatus, FIX_END, FIX_HEAD, IotProto, IotStatusMap } from './define/IotProto';
-import { ALERT_BATTERY_VOLTAGE, IOT_AUTO_UPDATE_INTERVAL, WARN_BATTERY_VOLTAGE } from './define/constants';
+import { EnumCmd, EnumFunCode, EnumIotStatus, FIX_END, FIX_HEAD, IotProto, IotStatusMap } from '../define/IotProto';
+import { ALERT_BATTERY_VOLTAGE, IOT_AUTO_UPDATE_INTERVAL, WARN_BATTERY_VOLTAGE } from '../define/constants';
 
 /**
  * @type {Map<string,IotCtl>}

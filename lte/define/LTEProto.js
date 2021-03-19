@@ -1,4 +1,4 @@
-import { MsgStruct, STRUCT_TYPE } from '../structUtils';
+import { MsgStruct, STRUCT_TYPE } from '../utils/structUtils';
 
 // <<<<<<<<<<<常量定义<<<<<<<<<<<<<
 export const MAX_PCI = 503;

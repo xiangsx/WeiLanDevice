@@ -1,8 +1,8 @@
-import {FRAME_HEAD_LE_ARR} from './define/LTEProto'
-import {FIX_HEAD_ARR} from "./define/IotProto";
+import {FRAME_HEAD_LE_ARR} from '../define/LTEProto'
+import {FIX_HEAD_ARR} from "../define/IotProto";
 import {createNewLteCtrl} from './LTEControllers'
 import {createNewIotCtrl} from "./IotCtl";
-import {TCP_TIME_OUT} from './define/constants'
+import {TCP_TIME_OUT} from '../define/constants'
 
 class TCPClient {
     /**

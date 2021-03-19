@@ -21,7 +21,7 @@ import {
     LteStatusMap,
     OperatorInfos,
     SysModeMap,
-} from './define/LTEProto';
+} from '../define/LTEProto';
 // eslint-disable-next-line no-unused-vars
 import {
     BAND_LIMIT_MAP,
@@ -37,9 +37,9 @@ import {
     TEMPERATURE_ALERT,
     TIME_FORMAT,
     UE_CACHE_INTERVAL,
-} from './define/constants';
-import { getCarrieroperator } from './utils/imsiUtil';
-import { getOtherDataByEarfcn, getRandomCellID, getRandomTAC } from './utils/ArfcnUtils';
+} from '../define/constants';
+import { getCarrieroperator } from '../utils/imsiUtil';
+import { getOtherDataByEarfcn, getRandomCellID, getRandomTAC } from '../utils/ArfcnUtils';
 
 /**
  *

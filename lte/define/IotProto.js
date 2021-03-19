@@ -1,4 +1,4 @@
-import {MsgStruct, STRUCT_TYPE} from '../structUtils'
+import {MsgStruct, STRUCT_TYPE} from '../utils/structUtils'
 
 export const FIX_HEAD = 0xAABBCCDD;
 export const FIX_HEAD_ARR = [0xAA, 0xBB, 0xCC, 0xDD];

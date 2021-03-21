@@ -14,7 +14,7 @@ class LteWS {
     startListen() {
         const {listen, wrap} = this.ws;
 
-        listen('ping', (data, res) => {
+        listen('hello', (data, res) => {
             wrap(res, data, EnumErrorDefine.ERR_UNKNOWN);
         });
     }

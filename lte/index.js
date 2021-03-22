@@ -1,5 +1,6 @@
 import TCPServer from './tcp/TCPServer'
-import LteWS from './ws';
+import './ws';
+import lteSchedule from './schedule'
 
-new LteWS();
+lteSchedule.start();
 const server = new TCPServer(3345).startServer();

@@ -3,8 +3,7 @@ import {EnumErrorDefine, ErrorMap} from '../define/error'
 
 class WSClient {
     constructor(host, namespace, options = {}) {
-        this.host = host;
-        this.namespace = namespace;
+        this.host = host;        this.namespace = namespace;
         this.url = `ws://${host}${namespace}`;
         this.socket = io(this.url, {
             autoConnect: true,
@@ -13,6 +12,7 @@ class WSClient {
             ...options
         });
         this.initLog();
+        this.init();
     }
 
     initLog = () => {
@@ -27,7 +27,6 @@ class WSClient {
     init = (register) => {
         this.socket.on('connect', () => {
             this.log(`${this.url} connect`);
-            register();
         });
     }
 

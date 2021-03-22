@@ -1,6 +1,6 @@
 import {v4} from 'uuid';
 import crypto from 'crypto'
-import {DEVICE_ID_FILE_PATH, DeviceTypeMap, EnumDeviceType} from "../define/project";
+import {DEVICE_ID_FILE_PATH, DeviceTypeMap, EnumDeviceType} from "../define/device.js";
 import fs from 'fs';
 
 /**

@@ -2,7 +2,7 @@ import WSClient from '../utils/WSClient';
 import {LTEWSCfg} from '../config/config.js'
 import {EnumErrorDefine} from '../define/error'
 import {generateDeviceID} from '../utils/tools'
-import {EnumDeviceType} from "../define/project";
+import {EnumDeviceType} from "../define/device";
 
 class LteWS {
     constructor() {
@@ -21,4 +21,6 @@ class LteWS {
     }
 }
 
-export default LteWS;
+const lteWS = new LteWS();
+
+export default lteWS;

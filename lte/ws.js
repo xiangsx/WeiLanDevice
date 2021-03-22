@@ -1,13 +1,14 @@
 import WSClient from '../utils/WSClient';
 import {LTEWSCfg} from '../config/config.js'
 import {EnumErrorDefine} from '../define/error'
+import {generateDeviceID} from '../utils/tools'
+import {EnumDeviceType} from "../define/project";
 
 class LteWS {
     constructor() {
-        this.ws = new WSClient(`${LTEWSCfg.host}:${LTEWSCfg.port}`, LTEWSCfg.namespace, {deviceID});
-        this.ws.init(async () => {
-            const res = await this.ws.emitAsync('register', {deviceID: 'lte_aaa'});
-        });
+        this.deviceID = generateDeviceID(EnumDeviceType.LTE);
+        this.ws = new WSClient(`${LTEWSCfg.host}:${LTEWSCfg.port}`, LTEWSCfg.namespace,
+            {query: {deviceID: this.deviceID}});
         this.startListen();
     }
 

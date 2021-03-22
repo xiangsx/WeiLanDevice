@@ -4,7 +4,7 @@ import {EnumErrorDefine} from '../define/error'
 
 class LteWS {
     constructor() {
-        this.ws = new WSClient(`${LTEWSCfg.host}:${LTEWSCfg.port}`, LTEWSCfg.namespace);
+        this.ws = new WSClient(`${LTEWSCfg.host}:${LTEWSCfg.port}`, LTEWSCfg.namespace, {deviceID});
         this.ws.init(async () => {
             const res = await this.ws.emitAsync('register', {deviceID: 'lte_aaa'});
         });

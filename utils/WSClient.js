@@ -12,18 +12,28 @@ class WSClient {
             reconnection: true,
             ...options
         });
+        this.initLog();
     }
+
+    initLog = () => {
+        const logMethodList = ['debug', 'log', 'warn', 'error']
+        for (let logMethod of logMethodList) {
+            this[logMethod] = (...rest) => {
+                return console[logMethod](`[${this.socket.id}]`, ...rest);
+            };
+        }
+    };
 
     init = (register) => {
         this.socket.on('connect', () => {
-            console.log(`${this.url} connect`);
+            this.log(`${this.url} connect`);
             register();
         });
     }
 
     emit = (event, data, cb) => {
         this.socket.emit(event, data, (...rest) => {
-            console.log(`[${this.url}]:emit [${event}] data:[${JSON.stringify(data)}] res:[${JSON.stringify(...rest)}]`);
+            this.log(`[${this.url}]:emit [${event}] data:[${JSON.stringify(data)}] res:[${JSON.stringify(...rest)}]`);
             cb(...rest);
         });
     }
@@ -36,7 +46,7 @@ class WSClient {
 
     listen = (event, handle) => {
         this.socket.on(event, (data, res) => {
-            console.log(`ltews listen event[${event}] data[${JSON.stringify(data)}]`);
+            this.log(`ltews listened event[${event}] data[${JSON.stringify(data)}]`);
             handle(data, res);
         });
     }
@@ -58,6 +68,7 @@ class WSClient {
             result.code = EnumErrorDefine.ERR_UNKNOWN;
             result.msg = ErrorMap.get(EnumErrorDefine.ERR_UNKNOWN).msg;
         }
+        this.log(`ws wrap msg [${JSON.stringify(result)}]`);
         res(result);
     }
 }

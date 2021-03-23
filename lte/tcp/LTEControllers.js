@@ -777,7 +777,7 @@ export class LTEControllers {
     async commonQueryAsync(cfgMsgType, msgBody) {
         const result = await this.packAndSendMsgAsync(cfgMsgType, msgBody);
         if (result < 0) {
-            return result;
+            return [result];
         }
         const {transID, MsgType: ackMsgType} = result;
         const [err, msgInfo] = await this.registerCBAsync(EnumCBKeyType.TRANSID, transID, {

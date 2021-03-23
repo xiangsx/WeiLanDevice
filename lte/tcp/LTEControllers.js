@@ -119,7 +119,7 @@ export class LTEControllers {
          */
         this._cellInfo = {
             Frame: SysModeMap.get(EnumSysMode.FDD),
-            Band: NaN,
+            Band: 0,
             settingCellInfo: {
                 ulEarfcn: 0,
                 dlEarfcn: 0,
@@ -128,20 +128,20 @@ export class LTEControllers {
                 CellId: 0,
                 UePMax: 0,
             },
-            ulEarfcn: NaN,
-            dlEarfcn: NaN,
+            ulEarfcn: 0,
+            dlEarfcn: 0,
             PLMN: '',
             SOFTWARE_VERSION: '',
             Bandwidth: BandwidthMap.get(EnumBandwidth.M_20),
-            PCI: NaN,
+            PCI: 0,
             RxGainValueFromReg: 0,
-            RxGainValueFromMib: NaN,
+            RxGainValueFromMib: 0,
             Pwr1Derease: 0,
-            PowerDereaseValueFromReg: NaN,
-            PowerDereaseValueFromMib: NaN,
-            AgcFlag: NaN,
-            SnfRxGainValueFromReg: NaN,
-            SnfRxGainValueFromMib: NaN,
+            PowerDereaseValueFromReg: 0,
+            PowerDereaseValueFromMib: 0,
+            AgcFlag: 0,
+            SnfRxGainValueFromReg: 0,
+            SnfRxGainValueFromMib: 0,
             RxOrSnfFlag: 0,
             dlEarfcnList: [],
             blackControlList: [],
@@ -167,7 +167,6 @@ export class LTEControllers {
             status: LteStatusMap.get(EnumLTEStatus.DISCONNECTED),
         };
         this._updateCellInfo({...cellInfo, status: LteStatusMap.get(EnumLTEStatus.DISCONNECTED)});
-        this._initSaveProcess();
         // this._intervalQuery();
         this.cbMap = {};
         this.initCheckCBMap();
@@ -200,12 +199,10 @@ export class LTEControllers {
      * 初始化保存ue进程
      * @private
      */
-    _initSaveProcess = () => {
-        this.saveProcess = setInterval(() => {
-            if (this.ueListCache.length > 0) {
-                this.ueListCache = [];
-            }
-        }, UE_CACHE_INTERVAL);
+    getAndClearUEList = () => {
+        const ueListCache = this.ueListCache;
+        this.ueListCache = [];
+        return ueListCache;
     };
 
     /**
@@ -898,8 +895,8 @@ export class LTEControllers {
     _handleUeInfoPrt(headObj, bodyObj) {
         if (bodyObj) {
             const {IMSI, IMEI, RSSI} = bodyObj;
-            const prtTime = moment().format(TIME_FORMAT);
-            this.ueListCache.push({IMSI, IMEI, RSSI, prtTime, deviceHost: this.host});
+            const prtTime = new Date().getTime();
+            this.ueListCache.push({IMSI, IMEI, RSSI, prtTime});
         }
     }
 

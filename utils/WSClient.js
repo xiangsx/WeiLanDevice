@@ -31,8 +31,13 @@ class WSClient {
     }
 
     emit = (event, data, cb) => {
+        if (!this.connected()) {
+            this.warn(`can not emit event, ws client disconnected`);
+            cb(EnumErrorDefine.ERR_WS_DISCONNECTED);
+            return;
+        }
         this.socket.emit(event, data, (...rest) => {
-            this.log(`[${this.url}]:emit [${event}] data:[${JSON.stringify(data)}] res:[${JSON.stringify(...rest)}]`);
+            this.log(`emit [${event}] req:[${JSON.stringify(data)}] res:[${JSON.stringify(...rest)}]`);
             cb(...rest);
         });
     }
@@ -69,6 +74,10 @@ class WSClient {
         }
         this.log(`ws wrap msg [${JSON.stringify(result)}]`);
         res(result);
+    }
+
+    connected() {
+        return this.socket.connected;
     }
 }
 

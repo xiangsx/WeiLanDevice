@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start-lte": "node -r esm lte/index.js",
+    "start-lte": "node -r esm bin/lte.js",
     "build": "webpack",
     "prod-install": "yarn install --prod",
     "prod-start-lte": "node dist/lte.js"
@@ -22,11 +22,11 @@
   "homepage": "https://github.com/xiangsx/WeiLanDevice#readme",
   "dependencies": {
     "babel-polyfill": "^6.26.0",
+    "better-sqlite3": "^7.1.2",
     "esm": "^3.2.25",
     "moment": "^2.29.1",
     "node-schedule": "^2.0.0",
     "socket.io-client": "^2.1.1",
-    "sqlite3": "^5.0.2",
     "struct": "^0.0.12",
     "uuid": "^8.3.2"
   },

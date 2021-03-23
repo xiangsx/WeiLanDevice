@@ -66,7 +66,10 @@ class LteSchedule {
         if (rows.length === 0) {
             return;
         }
-        await lteWS.sendUEList(rows);
+        const sendSucc = await lteWS.sendUEList(rows);
+        if (sendSucc) {
+            deleteRows();
+        }
     }
 }
 

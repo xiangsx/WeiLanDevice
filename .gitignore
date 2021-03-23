@@ -2,4 +2,4 @@
 yarn.lock
 node_modules
 *.db
-dist
+dist/

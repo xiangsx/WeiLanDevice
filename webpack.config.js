@@ -6,9 +6,9 @@ module.exports = {
   mode: 'production',
   target: 'node',
   entry: {
-    lte: ['babel-polyfill', './lte/index.js'],
-    client: ['babel-polyfill','./client/index.js'],
-    db: ['babel-polyfill','./utils/db.js']
+    lte: ['babel-polyfill', './bin/lte.js'],
+    // client: ['babel-polyfill','./client/index.js'],
+    // db: ['babel-polyfill','./utils/db.js']
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -22,6 +22,7 @@ module.exports = {
 
       include: [
         path.resolve(__dirname, 'lte'),
+        path.resolve(__dirname, 'bin'),
         path.resolve(__dirname, 'client'),
         path.resolve(__dirname, 'utils')
       ],

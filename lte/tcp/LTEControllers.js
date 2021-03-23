@@ -38,8 +38,9 @@ import {
     TIME_FORMAT,
     UE_CACHE_INTERVAL,
 } from '../define/constants';
-import { getCarrieroperator } from '../utils/imsiUtil';
-import { getOtherDataByEarfcn, getRandomCellID, getRandomTAC } from '../utils/ArfcnUtils';
+import {getCarrieroperator} from '../utils/imsiUtil';
+import {getOtherDataByEarfcn, getRandomCellID, getRandomTAC} from '../utils/ArfcnUtils';
+import {EnumErrorDefine} from "../../define/error";
 
 /**
  *
@@ -67,6 +68,7 @@ export class LTEControllers {
         this._lteClient = undefined;
         this._lteProto = new LTEProto();
         this.host = host;
+        this._initLog();
         /**
          * 针对LTE 板子接口设计的消息缓冲队列，解析分包消息
          * @type {Map<number, Array>}
@@ -76,7 +78,8 @@ export class LTEControllers {
         this.cacheBuff = Buffer.allocUnsafe(0);
         this.ueListCache = [];
         this.saveProcess = undefined;
-        this._SubSysCode = 0;
+        this._TransID = 1;
+        this._LTETransID = 1;
         this.autoModEarfcnProcess = setInterval;
         // 75度处理
         this.temperatureAlertTimes75 = 0;
@@ -98,12 +101,7 @@ export class LTEControllers {
          * whiteControlList:Array
          * earfcnAutoModing:boolean
          * modInterval:number
-         * locationIMSI:string
          * bandPwrdereaseMap:Object
-         * measValueClosed:number
-         * measValueAttK:number
-         * measValueFar:number
-         * farDistance:number
          * Pwr1Derease:number
          * settingCellInfo:{
          *     ulEarfcn:number
@@ -150,7 +148,6 @@ export class LTEControllers {
             whiteControlList: [],
             earfcnAutoModing: false,
             modInterval: DEFAULT_AUTO_MOD_EARFCN_INTERVAL,
-            locationIMSI: '',
             boardTemperature: 0,
             bandPwrdereaseMap: {},
             MeasUECfg: {
@@ -166,14 +163,6 @@ export class LTEControllers {
                 SrsSwitch: 0,
                 ControlSubMode: 0,
             },
-            // 0米时的定位测量值
-            measValueClosed: 146,
-            // (最远时定位测量值-0米时的定位测量值)/150
-            measValueAttK: -0.34,
-            // 最远时定位测量值
-            measValueFar: 95,
-            // 最远处距离
-            farDistance: 150,
             // 状态初始化始终为断开连接
             status: LteStatusMap.get(EnumLTEStatus.DISCONNECTED),
         };
@@ -197,6 +186,15 @@ export class LTEControllers {
         };
         this._latestMeasInfo = {};
     }
+
+    _initLog = () => {
+        const logMethodList = ['debug', 'log', 'warn', 'error']
+        for (let logMethod of logMethodList) {
+            this[logMethod] = (...rest) => {
+                return console[logMethod](`[${this.host}]`, ...rest);
+            };
+        }
+    };
 
     /**
      * 初始化保存ue进程
@@ -258,7 +256,7 @@ export class LTEControllers {
      * @param infos
      */
     _updateCellInfo = (infos) => {
-        console.debug(`${this.host} updating cellInfos:`, JSON.stringify(infos));
+        this.debug(` updating cellInfos:`, JSON.stringify(infos));
         if (infos) {
             let cellInfoChanged = false;
             for (const key in infos) {
@@ -301,17 +299,17 @@ export class LTEControllers {
                 }
                 else {
                     // 所有cellInfo字段 必须预先定义 不然报错
-                    console.error(`LteController._updateCellInfo get invalid key[${key}] in info:[${infos}]`);
+                    this.error(`LteController._updateCellInfo get invalid key[${key}] in info:[${infos}]`);
                 }
             }
             // 如果改变激活事件 CELL_INFO_CHANGED
             if (cellInfoChanged) {
-                console.debug(
-                    `client [${this.host}] updated info is :[${JSON.stringify(this._cellInfo)}]`);
+                this.debug(
+                    `client  updated info is :[${JSON.stringify(this._cellInfo)}]`);
             }
         }
         else {
-            console.error(`LTEComtroller._updateCellInfo :client [${this.host}] recv invalid info: ${infos}`);
+            this.error(`LTEComtroller._updateCellInfo :client  recv invalid info: ${infos}`);
         }
     };
 
@@ -321,27 +319,27 @@ export class LTEControllers {
      */
     initClient(tcpClient) {
         if (this._lteClient) {
-            console.log(`lte client [${this.host}] reconnected`);
+            this.log(`lte client  reconnected`);
         }
         else {
-            console.log(`lte client [${this.host}] connected`);
+            this.log(`lte client  connected`);
         }
         this._lteClient = tcpClient;
         this._lteClient.registerHandler('data', this.handMsg.bind(this));
         this._lteClient.registerHandler('error', (err) => {
             if (err) {
-                console.error(`lte controller [${this.host}] got error:${err}`);
+                this.error(`lte controller  got error:${err}`);
                 this._lteClient.destroy();
             }
         });
         this._lteClient.registerHandler('close', () => {
             this.updateStatus(EnumLTEStatus.DISCONNECTED);
-            console.warn(`lte controller [${this.host}] disconnected`);
+            this.warn(`lte controller  disconnected`);
         });
 
         this._lteClient.registerHandler('timeout', () => {
             this.updateStatus(EnumLTEStatus.DISCONNECTED);
-            console.warn(`lte controller [${this.host}] timeout`);
+            this.warn(`lte controller  timeout`);
             this._lteClient.destroy();
         });
     }
@@ -389,25 +387,31 @@ export class LTEControllers {
                     this.initQuery();
                 }
                 this._cellInfo.status = LteStatusMap.get(nextStatus);
-                console.log(`lte status changed from [${currStatus.text}] to [${this._cellInfo.status.text}]`);
+                this.log(`lte status changed from [${currStatus.text}] to [${this._cellInfo.status.text}]`);
             }
             else {
-                console.error(`LTEControllers.updateStatus invalid arguments :${nextStatus}`);
+                this.error(`LTEControllers.updateStatus invalid arguments :${nextStatus}`);
             }
         }
         else {
-            console.debug(`current state is ${currStatus.text}, not changed`);
+            this.debug(`current state is ${currStatus.text}, not changed`);
         }
     }
 
     /**
      * 注册消息回调
+     * @param idType
+     * @param id
+     * @param cb
+     * @param cfgMsgType
      * @param {EnumMsgType} ackMsgType
+     * @param timeout
+     * @param doNotNeedCommonHandle
      */
     registerCB(idType, id, cb, {cfgMsgType, ackMsgType, timeout, doNotNeedCommonHandle} = {}) {
         const key = `${idType}_${id}`
         if (this.cbMap[key]) {
-            console.warn(`[${this.host}] 已存在${key}对应的回调函数`);
+            this.warn(` 已存在${key}对应的回调函数`);
         }
         this.cbMap[key] = {
             cb,
@@ -418,7 +422,7 @@ export class LTEControllers {
             timeout,
             doNotNeedCommonHandle,
         };
-        console.log(`[${this.host}]注册事件 key:[${key}] info:${JSON.stringify(this.cbMap[key])}`);
+        this.log(`注册事件 key:[${key}] info:${JSON.stringify(this.cbMap[key])}`);
     }
 
     async registerCBAsync(idType, id, options = {}) {
@@ -432,7 +436,7 @@ export class LTEControllers {
     _activateCB(idType, id, error, {headObj, bodyObj}) {
         const key = `${idType}_${id}`
         if (this.cbMap[key]) {
-            console.log(`[${this.host}] 触发回调事件 ${key}`)
+            this.log(` 触发回调事件 ${key}`)
             this.cbMap[key].cb(error, {headObj, bodyObj});
             const {doNotNeedCommonHandle} = this.cbMap[key];
             delete this.cbMap[key];
@@ -448,10 +452,9 @@ export class LTEControllers {
                 const cbInfo = this.cbMap[key];
                 const {cb, timeout, time} = cbInfo;
                 if (moment().unix() - time > (timeout || LTE_ACK_TIMEOUT)) {
-                    console.warn(`[${this.host}]: callback ${key} timeout`);
-                    cb(`[${this.host}]: callback ${key} timeout`);
-                    console.log(
-                        `clear lte callback ${this.host} key:[${key}] now:[${moment().unix()}] start:[${time}]`);
+                    this.error(`callback ${key} timeout`);
+                    cb(EnumErrorDefine.ERR_LTE_QUERY_TIMEOUT);
+                    this.error(`clear lte callback key:[${key}] now:[${moment().unix()}] start:[${time}]`);
                     delete this.cbMap[key];
                 }
             }
@@ -465,10 +468,10 @@ export class LTEControllers {
     handMsg(data) {
         const headList = [];
         if (!Buffer.isBuffer(data)) {
-            console.error(`recv data is not buffer ,data:${data}`);
+            this.error(`recv data is not buffer ,data:${data}`);
             return;
         }
-        console.debug(`[${this.host}] recv msg,buffer:${data.toString('hex')}`);
+        this.debug(`recv msg,buffer:${data.toString('hex')}`);
         this.cacheBuff = Buffer.concat([this.cacheBuff, data]);
         try {
             // 记录粘了几个包 一个消息处理次数
@@ -477,25 +480,26 @@ export class LTEControllers {
                 parsedTimes += 1;
                 const headBuf = this.cacheBuff.slice(0, this._lteProto.HEAD_LENGTH);
                 const headObj = this._lteProto.HEAD.getObj(headBuf);
-                console.debug(`[${this.host}] head parsed`, JSON.stringify(headObj));
-                this._SubSysCode = headObj.SubSysCode;
+                this.debug(`head parsed`, JSON.stringify(headObj));
                 // 重启之后存在 制式为0的情况
                 if (headObj.Frame !== this._cellInfo.Frame.value && SysModeMap.has(headObj.Frame)) {
                     this._updateCellInfo({
                         Frame: SysModeMap.get(headObj.Frame),
                     });
                 }
-                const ifCompelte = headObj.SubSysCode >>> 15;
+                const ifLeft = headObj.SubSysCode >>> 15;
                 let transID = headObj.SubSysCode & 0x7fff;
+                this._LTETransID = transID;
                 headObj.transID = transID;
-                headObj.ifCompelte = ifCompelte;
+                headObj.ifLeft = ifLeft;
                 let bodyBuf = this.cacheBuff.slice(this._lteProto.HEAD_LENGTH, headObj.MsgLength);
-                console.debug(`[${this.host}] slice data ,headBuf:${
+                this.debug(`slice data ,headBuf:${
                     headBuf.toString('hex')},body buffer:${bodyBuf.toString('hex')}`);
                 // 消息未发送完
-                if (ifCompelte === 1) {
-                    transID += 1;
-                    console.log(`[${this.host}] 收到分包消息，tranID:${transID}`);
+                if (ifLeft === 1) {
+                    // transID += 1;
+                    // todo 测试这里transID去除之后是否正常
+                    this.log(`收到分包消息，tranID:${transID}`);
                     if (this.cacheMsg.has(transID)) {
                         this.cacheMsg.get(transID).push(bodyBuf);
                     }
@@ -509,29 +513,29 @@ export class LTEControllers {
                 // 收到分包剩余消息
                 else if (this.cacheMsg.has(transID)) {
                     bodyBuf = Buffer.concat([...this.cacheMsg.get(transID), bodyBuf]);
-                    console.debug(`[${this.host}] 分包处理完毕, bodyBuf 合体 ${bodyBuf.toString('hex')}`);
+                    this.debug(`分包处理完毕, bodyBuf 合体 ${bodyBuf.toString('hex')}`);
                     this.cacheMsg.delete(transID);
                 }
                 // 去除当前处理完成的消息长度
                 this.cacheBuff = this.cacheBuff.slice(headObj.MsgLength);
                 // 缓存中有剩余buffer 发生粘包
                 if (this.cacheBuff.length > 0) {
-                    console.debug(`[${this.host}] 粘包了 剩余buffer ${this.cacheBuff.toString('hex')}`);
+                    this.debug(`粘包了 剩余buffer ${this.cacheBuff.toString('hex')}`);
                 }
                 headList.push(headObj);
                 // 处理消息体
                 this._parseBody(headObj, bodyBuf);
             }
-            console.debug(`parsed msg in ${parsedTimes} times`);
+            this.debug(`parsed msg in ${parsedTimes} times`);
             // 粘包处理完了 还剩buffer 理论上不存在这种情况 但是谁知道呢
             if (this.cacheBuff.length > 0) {
-                console.debug(`[${this.host}] 粘包处理完了 还剩buffer？ ${this.cacheBuff.toString('hex')}`);
+                this.debug(` 粘包处理完了 还剩buffer？ ${this.cacheBuff.toString('hex')}`);
                 this.cacheBuff = Buffer.allocUnsafe(0);
             }
         } catch (e) {
             if (e) {
-                console.error(`parse msg from lte client[${this.host}] run error ,err:[${e}],msg buffer:[${
-                  this.cacheBuff.toString('hex')}] headList:${JSON.stringify(headList)}`);
+                this.error(`parse msg from lte client run error ,err:[${e}],msg buffer:[${
+                    this.cacheBuff.toString('hex')}] headList:${JSON.stringify(headList)}`);
                 this.cacheMsg = new Map();
             }
         }
@@ -549,123 +553,123 @@ export class LTEControllers {
         const {MsgType} = headObj;
         const bodyStruct = this._lteProto.getBodyStruct(MsgType);
         if (!bodyStruct) {
-            console.warn(`cannot support this msg type [${MsgType}]`);
+            this.error(`cannot support this msg type [${MsgType}]`);
             return;
         }
         const bodyObj = bodyStruct.getObj(bodyBuf);
-        console.debug(`[${this.host}] parsed msg ,headObj:${
-          JSON.stringify(headObj)},bodyObj:${JSON.stringify(bodyObj)}`);
+        this.debug(` parsed msg ,headObj:${
+            JSON.stringify(headObj)},bodyObj:${JSON.stringify(bodyObj)}`);
         const doNotNeedCommonHandle = this._activateCB(EnumCBKeyType.MSGTYPE, headObj.MsgType, null, {
             headObj,
             bodyObj
         });
+        this._activateCB(EnumCBKeyType.TRANSID, headObj.transID, null, {headObj, bodyObj});
         if (doNotNeedCommonHandle) {
             return;
         }
-        // this._activateCB(EnumCBKeyType.TRANSID, headObj.transID, null, {headObj, bodyObj});
         switch (MsgType) {
             case EnumMsgType.O_FL_ENB_TO_LMT_SYS_INIT_SUCC_IND:
-                console.debug(`recv msg type:[O_FL_ENB_TO_LMT_SYS_INIT_SUCC_IND],body:${JSON.stringify(bodyObj)}`);
+                this.debug(`recv msg type:[O_FL_ENB_TO_LMT_SYS_INIT_SUCC_IND],body:${JSON.stringify(bodyObj)}`);
                 this._handleSysInitSuccInd(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_SYS_ARFCN_ACK:
-                console.debug(`recv msg type:[O_FL_ENB_TO_LMT_SYS_ARFCN_ACK],body:${JSON.stringify(bodyObj)}`);
+                this.debug(`recv msg type:[O_FL_ENB_TO_LMT_SYS_ARFCN_ACK],body:${JSON.stringify(bodyObj)}`);
                 this._handSysArfcnAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_UE_INFO_RPT:
-                console.debug(`recv msg type:[O_FL_ENB_TO_LMT_UE_INFO_RPT],body:${JSON.stringify(bodyObj)}`);
+                this.debug(`recv msg type:[O_FL_ENB_TO_LMT_UE_INFO_RPT],body:${JSON.stringify(bodyObj)}`);
                 this._handleUeInfoPrt(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_SET_ADMIN_STATE_ACK:
-                console.debug(`recv msg type:[O_FL_ENB_TO_LMT_SET_ADMIN_STATE_ACK],body:${JSON.stringify(bodyObj)}`);
+                this.debug(`recv msg type:[O_FL_ENB_TO_LMT_SET_ADMIN_STATE_ACK],body:${JSON.stringify(bodyObj)}`);
                 this._handSetAdminStateAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_ENB_STATE_IND:
-                console.debug(`recv msg type:[O_FL_ENB_TO_LMT_ENB_STATE_IND],body:${JSON.stringify(bodyObj)}`);
+                this.debug(`recv msg type:[O_FL_ENB_TO_LMT_ENB_STATE_IND],body:${JSON.stringify(bodyObj)}`);
                 this._handEnbStateInd(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_RXGAIN_POWER_DEREASE_QUERY_ACK:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_RXGAIN_POWER_DEREASE_QUERY_ACK],body:${JSON.stringify(bodyObj)}`);
                 this._handlePowerDereaseQueryAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_SYS_PWR1_DEREASE_ACK:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_SYS_PWR1_DEREASE_ACK],body:${JSON.stringify(bodyObj)}`);
                 this._handlePwr1DereaseAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_MEAS_UE_ACK:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_MEAS_UE_ACK],body:${JSON.stringify(bodyObj)}`);
                 this._handleMeasUEAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_MEAS_UE_CFG_QUERY_ACK:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_MEAS_UE_CFG_QUERY_ACK],body:${JSON.stringify(bodyObj)}`);
                 this._handleMeasUECfgQueryAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_MEAS_INFO_RPT:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_MEAS_INFO_RPT],body:${JSON.stringify(bodyObj)}`);
                 this._handleMeasInfoPrt(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_SYS_MODE_ACK:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_SYS_MODE_ACK],body:${JSON.stringify(bodyObj)}`);
                 this._handleSysModeAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_CELL_STATE_INFO_QUERY_ACK:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_CELL_STATE_INFO_QUERY_ACK],body:${JSON.stringify(bodyObj)}`);
                 this._handleCellStateInfoQueryAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_SYS_ARFCN_MOD_ACK:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_SYS_ARFCN_MOD_ACK],body:${JSON.stringify(bodyObj)}`);
                 this._handleEarfcnModAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_BASE_INFO_QUERY_ACK:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_BASE_INFO_QUERY_ACK],body:${JSON.stringify(bodyObj)}`);
                 this._handleBaseInfoQueryAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_REBOOT_ACK:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_REBOOT_ACK],body:${JSON.stringify(bodyObj)}`);
                 this._handleRebootAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_MULTI_BAND_POWERDEREASE_QUERY_ACK:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_MULTI_BAND_POWERDEREASE_QUERY_ACK],body:${
                         JSON.stringify(bodyObj)}`);
                 this._handleMultiBandPowerdereaseQueryAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_SYS_RxGAIN_ACK:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_SYS_RxGAIN_ACK],body:${
                         JSON.stringify(bodyObj)}`);
                 this._handleSysRxGainCfgAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_LMT_TO_ENB_SELFCFG_CELLPARA_REQ_ACK:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_LMT_TO_ENB_SELFCFG_CELLPARA_REQ_ACK],body:${
                         JSON.stringify(bodyObj)}`);
                 this._handleSelfCfgCellParaReqAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_REM_INFO_RPT:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_REM_INFO_RPT],body:${
                         JSON.stringify(bodyObj)}`);
                 this._handleRemInfoPrt(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_CONTROL_UE_LIST_CFG_ACK:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_CONTROL_UE_LIST_CFG_ACK],body:${
                         JSON.stringify(bodyObj)}`);
                 this._handleControlUEListCfgAck(headObj, bodyObj);
                 break;
             case EnumMsgType.O_FL_ENB_TO_LMT_CONTROL_LIST_QUERY_ACK:
-                console.debug(
+                this.debug(
                     `recv msg type:[O_FL_ENB_TO_LMT_CONTROL_LIST_QUERY_ACK],body:${
                         JSON.stringify(bodyObj)}`);
                 this._handleControlListQueryAck(headObj, bodyObj);
@@ -675,14 +679,23 @@ export class LTEControllers {
         }
     }
 
+    _sendDataAsync(data) {
+        return new Promise(resolve => {
+            this._lteClient.sendData(data, () => {
+                resolve(true);
+            });
+        });
+    }
+
     /**
      * 打包消息
      * @param {EnumMsgType} msgType
      * @param {Object} msgBody 消息体对象，不存在传入undefined
+     * @param bAck 是否是回复消息 即是否需要transID相同
      */
-    packAndSendMsg(msgType, msgBody) {
+    packAndSendMsg(msgType, msgBody, bAck = false) {
         if (this._cellInfo.earfcnAutoModing && AUTO_MODING_BAN_MSGTYPE_LIST.includes(msgType)) {
-            console.log(`client [${this.host}] auto modify earfcn, if you want use other command , stop it first`);
+            this.log(`client auto modify earfcn, if you want use other command , stop it first`);
             return;
         }
         let bodyBuf;
@@ -693,14 +706,23 @@ export class LTEControllers {
             const bodyStruct = this._lteProto.getBodyStruct(msgType);
             bodyBuf = bodyStruct.getBuff(msgBody);
         }
+        // const ifLeft = 0;
+        let SubSysCode;
+        if (bAck) {
+            SubSysCode = this._LTETransID;
+        }
+        else {
+            this._TransID += 1;
+            SubSysCode = this._TransID;
+        }
         const headObj = {
             FrameHeader: FRAME_HEAD,
             MsgType: msgType,
             MsgLength: this._lteProto.HEAD_LENGTH + bodyBuf.length,
             Frame: this._cellInfo.Frame.value,
-            SubSysCode: this._SubSysCode += 1,
+            SubSysCode,
         };
-        console.debug(`lte server send msg to client [${this.host},head:${JSON.stringify(headObj)},body:${
+        this.debug(`lte server send msg to client ,head:${JSON.stringify(headObj)},body:${
             JSON.stringify(msgBody)}`);
         // todo 增加分包发送的逻辑
         const sendSucc = this._sendData(Buffer.concat([this._lteProto.HEAD.getBuff(headObj), bodyBuf],
@@ -711,12 +733,63 @@ export class LTEControllers {
         }
     }
 
+    async packAndSendMsgAsync(msgType, msgBody, bAck = false) {
+        if (this._cellInfo.status.value === EnumLTEStatus.DISCONNECTED || !this._lteClient) {
+            this.warn(`client  disconnected, cannot send data to client`);
+            return EnumErrorDefine.ERR_LTE_DISCONNECTED;
+        }
+        if (this._cellInfo.earfcnAutoModing && AUTO_MODING_BAN_MSGTYPE_LIST.includes(msgType)) {
+            this.log(`client auto modify earfcn, if you want use other command , stop it first`);
+            return EnumErrorDefine.ERR_LTE_STATUS_EXCEPTION;
+        }
+        let bodyBuf;
+        if (!msgBody) {
+            bodyBuf = Buffer.from([]);
+        }
+        else {
+            const bodyStruct = this._lteProto.getBodyStruct(msgType);
+            bodyBuf = bodyStruct.getBuff(msgBody);
+        }
+        // const ifLeft = 0;
+        let SubSysCode;
+        if (bAck) {
+            SubSysCode = this._LTETransID;
+        }
+        else {
+            this._TransID += 1;
+            SubSysCode = this._TransID;
+        }
+        const transID = SubSysCode;
+        const headObj = {
+            FrameHeader: FRAME_HEAD,
+            MsgType: msgType,
+            MsgLength: this._lteProto.HEAD_LENGTH + bodyBuf.length,
+            Frame: this._cellInfo.Frame.value,
+            SubSysCode,
+        };
+        this.debug(`lte server send msg to client ,head:${JSON.stringify(headObj)},body:${JSON.stringify(msgBody)}`);
+        // todo 增加分包发送的逻辑
+        const sendSucc = await this._sendDataAsync(Buffer.concat([this._lteProto.HEAD.getBuff(headObj), bodyBuf],
+            this._lteProto.HEAD_LENGTH + bodyBuf.length));
+        return {...headObj, transID};
+    }
+
+    async commonQueryAsync(cfgMsgType, msgBody) {
+        const result = await this.packAndSendMsgAsync(cfgMsgType, msgBody);
+        if (result < 0) {
+            return result;
+        }
+        const {transID, MsgType: ackMsgType} = result;
+        const [err, msgInfo] = await this.registerCBAsync(EnumCBKeyType.TRANSID, transID, {
+            doNotNeedCommonHandle: true,
+            cfgMsgType,
+            ackMsgType
+        });
+        return [err, msgInfo];
+    }
+
     _handleMeasInfoPrt(headObj, bodyObj) {
         const {IMSI, UeMeasValue, ProtocolVer} = bodyObj;
-        if (IMSI === this._cellInfo.locationIMSI && this._cellInfo.earfcnAutoModing) {
-            this.stopAutoModEarfcn();
-        }
-        // const ueDistance = (UeMeasValue - this._cellInfo.measValueClosed) / this._cellInfo.measValueAttK;
         let handledUeMeasValue = UeMeasValue;
         if (this._cellInfo.Frame.value === EnumSysMode.TDD) {
             handledUeMeasValue = UeMeasValue + 54;
@@ -749,9 +822,9 @@ export class LTEControllers {
             }
         }
         else {
-            console.log('cannot get CellState from SysInitSuccInd Msg body');
+            this.log('cannot get CellState from SysInitSuccInd Msg body');
         }
-        // console.log(JSON.stringify({...headObj, ...bodyObj}))
+        // this.log(JSON.stringify({...headObj, ...bodyObj}))
         this.sendSysInitSuccRsp();
     }
 
@@ -806,7 +879,7 @@ export class LTEControllers {
               CellStateInd === EnumEnbState.WR_FL_ENB_STATE_GPS_SYNC_FAIL) {
             }
             if (CellStateInd === EnumEnbState.WR_FL_ENB_STATE_SCAN_SUCC) {
-                console.debug(`device ${this.host} scan net succ`);
+                this.debug(`device  scan net succ`);
             }
             if (CellStateInd === EnumEnbState.WR_FL_ENB_STATE_AIR_SYNC_FAIL) {
             }
@@ -849,7 +922,7 @@ export class LTEControllers {
     sendPwr1DereaseCfg(data) {
         const {Pwr1Derease, IsSave} = data;
         const prePwr1Derease = this._cellInfo.bandPwrdereaseMap[this._cellInfo.Band] || 0;
-        console.log(`device[${this.host}] prePwr1Derease is `, prePwr1Derease);
+        this.log(`device prePwr1Derease is `, prePwr1Derease);
         if (Pwr1Derease !== undefined && IsSave !== undefined) {
             this.packAndSendMsg(EnumMsgType.O_FL_LMT_TO_ENB_SYS_PWR1_DEREASE_CFG, {
                 Pwr1Derease: Pwr1Derease + prePwr1Derease,
@@ -857,7 +930,7 @@ export class LTEControllers {
             });
         }
         else {
-            console.error(`LTEController.sendPwr1DereaseCfg recv invalid data:${JSON.stringify(data)}`);
+            this.error(`LTEController.sendPwr1DereaseCfg recv invalid data:${JSON.stringify(data)}`);
         }
     }
 
@@ -922,7 +995,7 @@ export class LTEControllers {
     }
 
     sendSysInitSuccRsp() {
-        this.packAndSendMsg(EnumMsgType.O_FL_LMT_TO_ENB_SYS_INIT_SUCC_RSP, undefined)
+        this.packAndSendMsg(EnumMsgType.O_FL_LMT_TO_ENB_SYS_INIT_SUCC_RSP, undefined, true)
     }
 
     /**
@@ -969,7 +1042,7 @@ export class LTEControllers {
             });
         }
         else {
-            console.error(`invalid input arguments, ServingCellCfgInfo:${JSON.stringify(ServingCellCfgInfo)}`);
+            this.error(`invalid input arguments, ServingCellCfgInfo:${JSON.stringify(ServingCellCfgInfo)}`);
         }
     }
 
@@ -1009,7 +1082,7 @@ export class LTEControllers {
         if (sysMode !== undefined) {
             return this.packAndSendMsg(EnumMsgType.O_FL_LMT_TO_ENB_SYS_MODE_CFG, {sysMode})
         }
-        console.warn(`sendSysModeCfg invalid arguments :${JSON.stringify(data)}`);
+        this.warn(`sendSysModeCfg invalid arguments :${JSON.stringify(data)}`);
         return null;
     }
 
@@ -1122,7 +1195,6 @@ export class LTEControllers {
                             CampOnAllowedFlag,
                             SrsSwitch,
                         };
-                        this._updateCellInfo({locationIMSI: IMSI});
                     }
                     break;
                 }
@@ -1145,7 +1217,7 @@ export class LTEControllers {
             }
         }
         if (err) {
-            console.error(`LTEController.sendMeasUECfg invalid options:${
+            this.error(`LTEController.sendMeasUECfg invalid options:${
                 JSON.stringify(options)} ,workMode:${workMode}`);
             return;
         }
@@ -1210,13 +1282,13 @@ export class LTEControllers {
             this.packAndSendMsg(EnumMsgType.O_FL_LMT_TO_ENB_BASE_INFO_QUERY, {EnbBaseInfoType});
         }
         else {
-            console.error(`Invalid EnbBaseInfoType`);
+            this.error(`Invalid EnbBaseInfoType`);
         }
     }
 
     _handleBaseInfoQueryAck(headObj, bodyObj) {
         const {EnbBaseInfoType, EnbBaseInfo} = bodyObj;
-        console.log(JSON.stringify(bodyObj));
+        this.log(JSON.stringify(bodyObj));
         switch (EnbBaseInfoType) {
             case EnumBaseInfoType.DEVICE_MODEL:
                 break;
@@ -1251,7 +1323,7 @@ export class LTEControllers {
 
     _handleEarfcnModAck(headObj, bodyObj) {
         if (bodyObj.CfgResult === 0) {
-            //     `设备[${this.host}]动态频点配置成功`);
+            //     `设备动态频点配置成功`);
             const {dlEarfcn, ulEarfcn, Band, PLMN} = this._cellInfo.settingCellInfo;
             if (dlEarfcn && Band) {
                 this._updateCellInfo({
@@ -1335,7 +1407,7 @@ export class LTEControllers {
             const {band, Pwrderease} = bandInfo;
             bandPwrdereaseMap[band] = Pwrderease;
         }
-        console.log(`device [${this.host}] bandPwrdereaseMap is `, JSON.stringify(bandPwrdereaseMap));
+        this.log(`device  bandPwrdereaseMap is `, JSON.stringify(bandPwrdereaseMap));
         this._updateCellInfo({bandPwrdereaseMap});
     }
 
@@ -1358,7 +1430,7 @@ export class LTEControllers {
             this._updateCellInfo({dlEarfcnList: earfcnList, modInterval: interval});
         }
         else {
-            console.error(`LTEController.setModEarfcnInfo invalid arguments,arg:${JSON.stringify({
+            this.error(`LTEController.setModEarfcnInfo invalid arguments,arg:${JSON.stringify({
                 earfcnList,
                 interval
             })}`);
@@ -1384,7 +1456,7 @@ export class LTEControllers {
      */
     startAutoModEarfcn() {
         if (this._cellInfo.dlEarfcnList.length === 0) {
-            console.warn(`device [${this.host}] has no dlEarfcnList, please add first`);
+            this.warn(`device  has no dlEarfcnList, please add first`);
             return;
         }
         if (this._cellInfo.status.value !== EnumLTEStatus.ACTIVATED) {
@@ -1402,7 +1474,7 @@ export class LTEControllers {
                 return;
             }
             const nextDlEarfcn = this._getNextEarfcnToMod();
-            console.log(`device [${this.host}] auto mod earfcn from [${
+            this.log(`device  auto mod earfcn from [${
                 this._cellInfo.dlEarfcn}] to [${nextDlEarfcn}]`);
             this.sendEarfcnMod(nextDlEarfcn);
         }, this._cellInfo.modInterval * 1000);
@@ -1424,38 +1496,16 @@ export class LTEControllers {
      */
     _sendData(data) {
         if (this._cellInfo.status.value === EnumLTEStatus.DISCONNECTED) {
-            console.warn(`client [${this.host}] disconnected, cannot send data to client`);
+            this.warn(`client  disconnected, cannot send data to client`);
             return;
         }
         if (this._lteClient) {
             this._lteClient.sendData(data, () => {
-                console.debug(`send data to client [${this.host}] successfully , buffer:${data.toString('hex')}`);
+                this.debug(`send data to client successfully, buffer:${data.toString('hex')}`);
             });
             // eslint-disable-next-line
             return true;
         }
-    }
-
-    /**
-     * 设置测量值步长信息
-     * @param measValueClosed 0米时的测量值
-     * @param measValueFar 最远处的测量值
-     * @param farDistance 最远的距离
-     */
-    setMeasUnitInfo(measValueClosed, measValueFar, farDistance) {
-        const measValueAttK = (measValueFar - measValueClosed) / farDistance;
-        console.log(`device [${this.host}] setMeasUnitInfo ${JSON.stringify({
-            measValueClosed,
-            measValueFar,
-            farDistance,
-            measValueAttK,
-        })}:`);
-        this._updateCellInfo({
-            measValueClosed,
-            measValueFar,
-            farDistance,
-            measValueAttK,
-        });
     }
 
     /**
@@ -1470,8 +1520,8 @@ export class LTEControllers {
             RxGainSaveFlag: RxGainSaveFlag ? 1 : 0,
             RxOrSnfFlag,
         };
-        this._updateCellInfo({ RxOrSnfFlag: bodyObj.RxOrSnfFlag});
-        console.log(JSON.stringify(bodyObj));
+        this._updateCellInfo({RxOrSnfFlag: bodyObj.RxOrSnfFlag});
+        this.log(JSON.stringify(bodyObj));
         this.packAndSendMsg(EnumMsgType.O_FL_LMT_TO_ENB_SYS_RxGAIN_CFG, bodyObj);
     }
 
@@ -1516,7 +1566,7 @@ export class LTEControllers {
     sendRemCfg({wholeBandRem, sysEarfcnList}) {
         const targetList = sysEarfcnList.length > 0 ? sysEarfcnList :
           getNetScanList(this.host, this._cellInfo.Frame.value);
-        console.log(`准备启动扫网 目标频点列表 ${targetList}`);
+        this.log(`准备启动扫网 目标频点列表 ${targetList}`);
         const body = {
             wholeBandRem: wholeBandRem ? 1 : 0,
             sysEarfcnNum: targetList.length,
@@ -1526,11 +1576,11 @@ export class LTEControllers {
     }
 
     _handleRemInfoPrt(head, body) {
-        console.log(`[${this.host}] 准备处理扫网信息`, body.collectionTypeFlag === 0, JSON.stringify(body));
+        this.log(` 准备处理扫网信息`, body.collectionTypeFlag === 0, JSON.stringify(body));
         if (body.collectionTypeFlag === 0) {
         }
         else {
-            console.log(`[${this.host}] 收到同步扫频消息`);
+            this.log(`收到同步扫频消息`);
         }
     }
 
@@ -1575,7 +1625,7 @@ export class LTEControllers {
 
     _handleControlListQueryAck(_, bodyObj) {
         const {ControlListProperty, ControlListUEId} = bodyObj;
-        // console.log('_handleControlListQueryAck', JSON.stringify(bodyObj));
+        // this.log('_handleControlListQueryAck', JSON.stringify(bodyObj));
         if (ControlListProperty === 0) {
             this._updateCellInfo({blackControlList: ControlListUEId});
         }
@@ -1606,7 +1656,7 @@ export class LTEControllers {
                 deleteSet.add(IMSI);
             }
         }
-        // console.log(Array.from(nowControlSet), Array.from(addSet), Array.from(deleteSet));
+        // this.log(Array.from(nowControlSet), Array.from(addSet), Array.from(deleteSet));
         if (addSet.size > 0) {
             await this.sendControlUEListCfg({
                 ControlUEProperty: ControlListType,
@@ -1621,72 +1671,6 @@ export class LTEControllers {
                 ControlUEIdentity: Array.from(deleteSet),
             });
         }
-    }
-
-    /**
-     * @param {EnumSysMode} sysMode
-     */
-    changeSysModeAync(sysMode) {
-        return new Promise(async resolve => {
-            console.log(`${this.host} Step: 切换模式中 target mode${SysModeMap.get(sysMode).text}`);
-            if (sysMode === this._cellInfo.Frame.value) {
-                resolve([null]);
-                return;
-            }
-            const bodyObj = {sysMode: 0};
-            if (sysMode === EnumSysMode.FDD) {
-                bodyObj.sysMode = 1
-            }
-            // 先修改模式
-            const [err] = await this.sendSysModeCfgAsync(bodyObj);
-            if (err) {
-                resolve([err]);
-                return;
-            }
-            console.log(`${this.host} Step: 切换模式配置成功`);
-            // 再重启 此处只是配置重启但是尚未重启完毕
-            const [err1] = await this.sendRebootCfgAsync();
-            if (err1) {
-                resolve([err1]);
-                return;
-            }
-            console.log(`${this.host} Step: 重启配置成功`);
-            // 重启时间超时
-            let timeAlready = 0;
-            const interval = setInterval(() => {
-                if (timeAlready > LTE_DEFAULT_REBOOT_WAIT_TIMEOUT) {
-                    console.log(`${this.host} Step: 切换模式超时 ${this._cellInfo.Frame.text}`);
-                    resolve([`changeSysModeAync timeout`]);
-                    clearInterval(interval);
-                    return;
-                }
-                console.log(`${this.host} Step: 切换模式中 target mode${SysModeMap.get(sysMode).text}`);
-                if (sysMode === this._cellInfo.Frame.value) {
-                    resolve([null]);
-                    console.log(`${this.host} Step: 切换模式成功 current mode${this._cellInfo.Frame.text}`);
-                    clearInterval(interval);
-                    return;
-                }
-                timeAlready += 1;
-            }, 1000);
-        })
-    }
-
-
-    /**
-     * @param {EnumSysMode|Number} frame
-     * @param earfcnList
-     */
-    setNearbyEarfcnMap(frame, earfcnMap) {
-        this._nearbyEarfcnMap[frame] = earfcnMap;
-    }
-
-    /**
-     * @param {EnumSysMode|Number} frame
-     * @return {*}
-     */
-    getNearbyEarfcnMap(frame) {
-        return this._nearbyEarfcnMap[frame];
     }
 }
 

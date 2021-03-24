@@ -1,15 +1,15 @@
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
+import {table} from './dbInit';
 
 const dbPath = path.join(__dirname, './ss.db');
 const tableSqlPath = path.join(__dirname, './table.sql');
 
-const db = new Database(dbPath, {verbose: console.log});
+const db = new Database(dbPath, {verbose: console.debug});
 
 export function initDB() {
-    const migration = fs.readFileSync(tableSqlPath, 'utf8');
-    db.exec(migration);
+    db.exec(table);
 }
 
 export function getOfflineUEList() {

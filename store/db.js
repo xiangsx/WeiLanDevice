@@ -3,7 +3,6 @@ import path from 'path';
 import {table} from './dbInit';
 
 const dbPath = path.join(__dirname, './ss.db');
-const tableSqlPath = path.join(__dirname, './table.sql');
 
 const db = new Database(dbPath, {verbose: console.debug});
 

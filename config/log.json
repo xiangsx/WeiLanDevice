@@ -1,0 +1,33 @@
+{
+    "appenders": {
+        "fileError": {
+            "type": "file",
+            "filename": "logs/error.log"
+        },
+        "fileDefault": {
+            "type": "file",
+            "filename": "logs/default.log"
+        },
+        "console": {
+            "type": "console"
+        }
+    },
+    "categories": {
+        "error": {
+            "appenders": [
+                "console",
+                "fileError",
+                "fileDefault"
+            ],
+            "level": "error"
+        },
+        "default": {
+            "appenders": [
+                "console",
+                "fileDefault"
+            ],
+            "level": "trace"
+        }
+    },
+    "pm2": true
+}

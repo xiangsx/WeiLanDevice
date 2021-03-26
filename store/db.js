@@ -7,7 +7,7 @@ const dbPath = path.join(__dirname, './ss.db');
 const db = new Database(dbPath, {verbose: console.debug});
 
 export function initDB() {
-    db.exec(table);
+    db.exec(table)
 }
 
 export function getOfflineUEList() {

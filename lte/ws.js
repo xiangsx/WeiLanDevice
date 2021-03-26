@@ -37,6 +37,9 @@ class LteWS {
         if (ueList.length === 0) {
             return true;
         }
+        if (!this.connected()) {
+            return false;
+        }
         const ueMap = {};
         for (const ue of ueList) {
             const {IMSI, IMEI, RSSI, prtTime} = ue;

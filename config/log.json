@@ -2,11 +2,23 @@
     "appenders": {
         "fileError": {
             "type": "file",
-            "filename": "logs/error.log"
+            "filename": "logs/error.log",
+            "layout": {
+                "type":"pattern",
+                "pattern": "[%r] [%p] - %m"
+            }
         },
         "fileDefault": {
-            "type": "file",
-            "filename": "logs/default.log"
+            "daysToKeep": 7,
+            "keepFileExt": true,
+            "type": "dateFile",
+            "pattern": ".yyyy-MM-dd",
+            "filename": "logs/all/default.log",
+            "compress": true,
+            "layout": {
+                "type":"pattern",
+                "pattern": "[%r] [%p] - %m"
+            }
         },
         "console": {
             "type": "console"

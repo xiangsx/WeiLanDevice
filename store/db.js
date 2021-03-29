@@ -4,9 +4,10 @@ import {table} from './dbInit';
 
 const dbPath = path.join(__dirname, './ss.db');
 
-const db = new Database(dbPath, {verbose: console.debug});
+let db;
 
 export function initDB() {
+    db = new Database(dbPath, {verbose: console.debug});
     db.exec(table)
 }
 

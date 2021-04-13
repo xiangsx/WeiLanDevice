@@ -10,7 +10,7 @@ class WSClient {
             withCredentials: true,
             reconnection: true,
             ...options
-        });
+        }).compress(true);
         this.initLog();
         this.init();
     }

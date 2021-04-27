@@ -147,3 +147,6 @@ export const IP_54 = '192.168.2.54';
 
 export const WARN_BATTERY_VOLTAGE = 20;
 export const ALERT_BATTERY_VOLTAGE = 10;
+
+// LTE device info 更新最大间隔值，如果超过这个值，不论状态是否变化都上传状态
+export const LTE_DEVICE_INFO_UPDATE_MAX_INTERVAL = 30;

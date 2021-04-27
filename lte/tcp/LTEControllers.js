@@ -41,6 +41,7 @@ import {
 import {getCarrieroperator} from '../utils/imsiUtil';
 import {getOtherDataByEarfcn, getRandomCellID, getRandomTAC} from '../utils/ArfcnUtils';
 import {EnumErrorDefine} from "../../define/error";
+import {Emitter, EVENTS} from "../events";
 
 /**
  *
@@ -303,6 +304,7 @@ export class LTEControllers {
             if (cellInfoChanged) {
                 this.debug(
                     `client  updated info is :[${JSON.stringify(this._cellInfo)}]`);
+                Emitter.emit(EVENTS.CellInfoChanged, {host: this.host, cellInfo: this._cellInfo});
             }
         }
         else {
@@ -1676,7 +1678,7 @@ export class LTEControllers {
  * @param host IP地址
  * @param {TCPClient} lteClient 客户端
  */
-const createNewLteCtrl = (host, lteClient) => {
+export const createNewLteCtrl = (host, lteClient) => {
     let lteCtl;
     if (LteCtrlMap.has(host)) {
         lteCtl = LteCtrlMap.get(host);
@@ -1717,7 +1719,7 @@ export function createLteCtrls (lteCellInfos) {
  * @param host IP地址
  * @return {LTEControllers}
  */
-const getLteCtrl = (host) => {
+export const getLteCtrl = (host) => {
     return LteCtrlMap.get(host);
 };
 
@@ -1750,21 +1752,6 @@ export const getAllLteCtrl = () => {
     return deviceList;
 };
 
-/**
- * 获取所有设备属性
- * @return {LTEControllers[]}
- */
-export const getAllLteList = () => {
-    const lteList = [];
-    const itr = LteCtrlMap.values();
-    let lteCtl = itr.next().value;
-    while (lteCtl) {
-        lteList.push(lteCtl);
-        lteCtl = itr.next().value;
-    }
-    return lteList;
-};
-
 export function startAllLte() {
     const itr = LteCtrlMap.values();
     let lteCtl = itr.next().value;
@@ -1781,14 +1768,6 @@ export function startAllLte() {
     return startList;
 }
 
-export function deleteLTECtl(host) {
-    if (LteCtrlMap.has(host)) {
-        LteCtrlMap.delete(host);
-    } else {
-        console.log(`deleteLTECtl host[${host}] not in LteCtrlMap`);
-    }
-}
-
 export function stopAllLteCell() {
     const itr = LteCtrlMap.values();
     let lteCtl = itr.next().value;
@@ -1799,5 +1778,3 @@ export function stopAllLteCell() {
         lteCtl = itr.next().value;
     }
 }
-
-export {createNewLteCtrl, getLteCtrl};

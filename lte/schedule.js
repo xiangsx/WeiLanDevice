@@ -1,11 +1,12 @@
 import {scheduleJob} from 'node-schedule'
-import lteWS from './ws'
+import lteWS from './server/ws'
 import {getAllLteCtrl} from './tcp/LTEControllers'
 import {getOfflineUEList, saveOfflineUE} from "../store/db";
+import lteCenter from "./lteCenter";
 
 const LteScheduleList = [
     {
-        enable: false,
+        enable: true,
         // 每秒一次
         schedule: '*/1 * * * * *',
         handle: lteSchedule => lteSchedule.syncDeviceStatus
@@ -37,8 +38,8 @@ class LteSchedule {
         }
     }
 
-    syncDeviceStatus() {
-        console.log('syncDeviceStatus');
+    async syncDeviceStatus() {
+        await lteCenter.syncDeviceInfo();
     };
 
     async uploadUEList() {
@@ -52,7 +53,7 @@ class LteSchedule {
             return;
         }
 
-        const sendSucc = await lteWS.sendUEList(ueList)
+        const sendSucc = await lteCenter.sendUEList(ueList)
         if (!sendSucc) {
             saveOfflineUE(ueList);
         }
@@ -66,7 +67,7 @@ class LteSchedule {
         if (rows.length === 0) {
             return;
         }
-        const sendSucc = await lteWS.sendUEList(rows);
+        const sendSucc = await lteCenter.sendUEList(rows);
         if (sendSucc) {
             deleteRows();
         }

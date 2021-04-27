@@ -1,6 +1,6 @@
 import TCPServer from '../lte/tcp/TCPServer'
 import {initLog} from '../utils/log'
-import '../lte/ws';
+import '../lte/server/ws';
 import lteSchedule from '../lte/schedule'
 import {initDB} from '../store/db'
 

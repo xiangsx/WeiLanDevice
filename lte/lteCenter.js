@@ -78,7 +78,10 @@ class LteCenter {
             return;
         }
         this.deviceInfo.updateTime = moment().unix();
-        const result = await lteWS.emitAsync(EnumWSRoutes.SyncDeviceInfo, this.deviceInfo);
+        const result = await lteWS.emitAsync(EnumWSRoutes.SyncDeviceInfo, {
+            ...this.deviceInfo,
+            save: this.deviceInfoChanged
+        });
         if (result && result.code === 0) {
             console.log(`sync deviceinfo successfully!!!`);
             this.deviceInfoChanged = false;

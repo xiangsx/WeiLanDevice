@@ -2,6 +2,7 @@ import {v4} from 'uuid';
 import crypto from 'crypto'
 import {DEVICE_ID_FILE_PATH, DeviceTypeMap, EnumDeviceType} from "../define/device.js";
 import fs from 'fs';
+import assert from 'assert';
 
 /**
  * 生成设备ID
@@ -19,10 +20,11 @@ export function generateDeviceID(deviceType) {
     if (!deviceID) {
         const md5 = crypto.createHash('md5');
         const splitStr = '|';
-        deviceID = `${deviceInfo.prefix}${splitStr}${new Date().getTime()}${splitStr}${
-            md5.update(v4()).digest('hex').toUpperCase().slice(0, 14)}`;
+        deviceID = `${deviceInfo.prefix}${splitStr}${
+            md5.update(v4()).digest('hex').toUpperCase().slice(0, 12)}`;
         fs.writeFileSync(fileName, deviceID, 'utf-8');
     }
+    assert(deviceID.length === 16);
     return deviceID
 }
 

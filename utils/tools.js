@@ -19,7 +19,7 @@ export function generateDeviceID(deviceType) {
     }
     if (!deviceID) {
         const md5 = crypto.createHash('md5');
-        const splitStr = '|';
+        const splitStr = '_';
         deviceID = `${deviceInfo.prefix}${splitStr}${
             md5.update(v4()).digest('hex').toUpperCase().slice(0, 12)}`;
         fs.writeFileSync(fileName, deviceID, 'utf-8');

@@ -12,9 +12,13 @@ class LteCenter {
     constructor() {
         this.status = {};
         this.deviceInfoChanged = true;
-        this.listenCellInfoChange()
+        this.listenCellInfoChange();
         this.deviceInfo = {
             status: EnumDeviceStatus.EXCEPTION,
+            liveGps: {
+                lat:1,
+                lng: 1,
+            },
             deviceType: EnumDeviceType.LTE,
             updateTime: moment().unix(),
             deviceDetails: []

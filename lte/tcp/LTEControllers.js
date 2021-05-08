@@ -1647,8 +1647,13 @@ export class LTEControllers {
     }
 
     handleGpsLocationQueryAck(head,body) {
-        const {Longitude, Latitude, Altitude} = body;
-        this._updateCellInfo({Longitude, Latitude, Altitude});
+        const {Longitude, Latitude, Altitude, RateOfPro} = body;
+        if (RateOfPro === 100) {
+            this._updateCellInfo({Longitude, Latitude, Altitude});
+        }else {
+            // 如果进度不到100 3秒后重新查询
+            setTimeout(this.sendGpsLocationQuery, 3000);
+        }
     }
 
     async syncControlList(ControlListType, ControlUEList) {

@@ -747,6 +747,17 @@ class LTEProto {
         }
     };
 
+    GPS_LOCATION_QUERY_ACK = new MsgStruct([
+        [STRUCT_TYPE.word32Ule,'Paraoff1'],
+        // 经度lng
+        [STRUCT_TYPE.floatle,'Longitude'],
+        // 纬度lat
+        [STRUCT_TYPE.floatle,'Latitude'],
+        [STRUCT_TYPE.floatle,'Altitude'],
+        [STRUCT_TYPE.word32Ule,'RateOfPro'],
+        [STRUCT_TYPE.word32Ule,'Paraoff2'],
+    ]);
+
     COMMON_SET_ACK = new MsgStruct([
         // 配置结果 0：成功  >0 错误编号
         [STRUCT_TYPE.word32Ule, 'CfgResult'],
@@ -802,6 +813,8 @@ class LTEProto {
         this._MsgStructMap.set(EnumMsgType.O_FL_ENB_TO_LMT_CONTROL_LIST_QUERY_ACK, this.CONTROL_LIST_QUERY_ACK);
         this._MsgStructMap.set(EnumMsgType.O_FL_LMT_TO_ENB_CONTROL_UE_LIST_CFG, this.CONTROL_UE_LIST_CFG);
         this._MsgStructMap.set(EnumMsgType.O_FL_ENB_TO_LMT_CONTROL_UE_LIST_CFG_ACK, this.CONTROL_UE_LIST_CFG_ACK);
+        this._MsgStructMap.set(EnumMsgType.O_FL_LMT_TO_ENB_GPS_LOCATION_QUERY, this.COMMON_QUERY);
+        this._MsgStructMap.set(EnumMsgType.O_FL_ENB_TO_LMT_GPS_LOCATION_QUERY_ACK, this.GPS_LOCATION_QUERY_ACK);
     }
 }
 

@@ -7,6 +7,7 @@ import {EnumDeviceStatus, EnumDeviceType} from "../define/device";
 import {EnumWSRoutes} from "./define/server";
 import lteWS from "./server/ws";
 import {LTE_DEVICE_INFO_UPDATE_MAX_INTERVAL} from "./define/constants";
+import coordtransform from 'coordtransform';
 
 class LteCenter {
     constructor() {
@@ -16,8 +17,12 @@ class LteCenter {
         this.deviceInfo = {
             status: EnumDeviceStatus.EXCEPTION,
             liveGps: {
-                lat:1,
-                lng: 1,
+                // 经度
+                Longitude: 0,
+                // 纬度
+                Latitude: 0,
+                // 高度
+                Altitude: 0,
             },
             deviceType: EnumDeviceType.LTE,
             updateTime: moment().unix(),
@@ -50,6 +55,9 @@ class LteCenter {
             host: item.host,
             cellInfo: item.getCellInfo()
         }));
+        const LongitudeList = []
+        const LatitudeList = [];
+        const AltitudeList = [];
         const statusNumMap = {
             [EnumLTEStatus.DISCONNECTED]: 0,
             [EnumLTEStatus.CONNECTED]: 0,
@@ -61,6 +69,28 @@ class LteCenter {
         for (const lteCtrl of lteCtrlList) {
             const cellInfo = lteCtrl.getCellInfo();
             statusNumMap[cellInfo.status.value] += 1;
+            if(cellInfo.Longitude){
+                LongitudeList.push(cellInfo.Longitude);
+            }
+            if(cellInfo.Latitude){
+                LatitudeList.push(cellInfo.Latitude);
+            }
+            if(cellInfo.Altitude){
+                AltitudeList.push(cellInfo.Altitude);
+            }
+        }
+        if (LongitudeList.length > 0 && LatitudeList.length > 0 && AltitudeList.length > 0) {
+            let Longitude = LongitudeList.reduce((a, b) => a + b) / LongitudeList.length;
+            let Latitude = LatitudeList.reduce((a, b) => a + b) / LatitudeList.length;
+            let Altitude = AltitudeList.reduce((a, b) => a + b) / AltitudeList.length;
+            // 转换坐标系 先gpswgs84 转 国测局坐标gcj02 再转 百度坐标bd09
+            const gcj02Point = coordtransform.wgs84togcj02(Longitude, Latitude);
+            const bd09Point = coordtransform.gcj02tobd09(...gcj02Point);
+            this.deviceInfo.liveGps = {
+                Longitude,
+                Latitude,
+                Altitude,
+            };
         }
         if (statusNumMap[EnumLTEStatus.ACTIVATED] === lteCtrlList.length) {
             this.deviceInfo.status = EnumDeviceStatus.WORKING;

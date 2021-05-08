@@ -151,6 +151,9 @@ export class LTEControllers {
             modInterval: DEFAULT_AUTO_MOD_EARFCN_INTERVAL,
             boardTemperature: 0,
             bandPwrdereaseMap: {},
+            Longitude: 0,
+            Latitude: 0,
+            Altitude: 0,
             MeasUECfg: {
                 WorkMode: EnumWorkMode.CONTINUED_MODE,
                 RedirectSubMode: 4,
@@ -672,6 +675,12 @@ export class LTEControllers {
                     `recv msg type:[O_FL_ENB_TO_LMT_CONTROL_LIST_QUERY_ACK],body:${
                         JSON.stringify(bodyObj)}`);
                 this._handleControlListQueryAck(headObj, bodyObj);
+                break;
+            case EnumMsgType.O_FL_ENB_TO_LMT_GPS_LOCATION_QUERY_ACK:
+                this.debug(
+                    `recv msg type:[O_FL_ENB_TO_LMT_GPS_LOCATION_QUERY_ACK],body:${
+                        JSON.stringify(bodyObj)}`);
+                this.handleGpsLocationQueryAck(headObj, bodyObj);
                 break;
             default:
                 break;
@@ -1631,6 +1640,15 @@ export class LTEControllers {
         else {
             this._updateCellInfo({whiteControlList: ControlListUEId});
         }
+    }
+
+    sendGpsLocationQuery() {
+        this.packAndSendMsg(EnumMsgType.O_FL_LMT_TO_ENB_GPS_LOCATION_QUERY, null);
+    }
+
+    handleGpsLocationQueryAck(head,body) {
+        const {Longitude, Latitude, Altitude} = body;
+        this._updateCellInfo({Longitude, Latitude, Altitude});
     }
 
     async syncControlList(ControlListType, ControlUEList) {

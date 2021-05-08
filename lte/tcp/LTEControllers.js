@@ -32,11 +32,9 @@ import {
     LOCATION_TARGET_LOST_START_AUTO_MOD_EARFCN,
     LTE_ACK_CHECK_INTERVAL,
     LTE_ACK_TIMEOUT,
-    LTE_DEFAULT_REBOOT_WAIT_TIMEOUT,
     LTE_LOCATION_PRT_OVERTIME,
     TEMPERATURE_ALERT,
     TIME_FORMAT,
-    UE_CACHE_INTERVAL,
 } from '../define/constants';
 import {getCarrieroperator} from '../utils/imsiUtil';
 import {getOtherDataByEarfcn, getRandomCellID, getRandomTAC} from '../utils/ArfcnUtils';
@@ -1652,7 +1650,9 @@ export class LTEControllers {
             this._updateCellInfo({Longitude, Latitude, Altitude});
         }else {
             // 如果进度不到100 3秒后重新查询
-            setTimeout(this.sendGpsLocationQuery, 3000);
+            setTimeout(() => {
+                this.sendGpsLocationQuery();
+            }, 3000);
         }
     }
 

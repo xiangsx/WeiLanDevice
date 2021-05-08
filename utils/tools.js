@@ -14,7 +14,7 @@ export function generateDeviceID(deviceType) {
     let deviceID;
     const fileName = `${DEVICE_ID_FILE_PATH}/${deviceInfo.prefix}_DEVICEID`;
     try {
-        deviceID = fs.readFileSync(fileName,'utf-8');
+        // deviceID = fs.readFileSync(fileName,'utf-8');
     } catch (e) {
     }
     if (!deviceID) {

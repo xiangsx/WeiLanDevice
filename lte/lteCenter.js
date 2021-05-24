@@ -18,9 +18,9 @@ class LteCenter {
             status: EnumDeviceStatus.EXCEPTION,
             liveGps: {
                 // 经度
-                Longitude: 0,
+                Longitude: 122 - Math.random() * 3,
                 // 纬度
-                Latitude: 0,
+                Latitude: 34 - Math.random() * 3,
                 // 高度
                 Altitude: 0,
             },

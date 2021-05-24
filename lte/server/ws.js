@@ -4,6 +4,7 @@ import {EnumErrorDefine} from '../../define/error'
 import {generateDeviceID} from '../../utils/tools'
 import {EnumDeviceType} from "../../define/device";
 import {EnumWSRoutes} from '../define/server';
+import {Hello, SetAutoModEarfcn} from "./controller";
 
 class LteWS {
     constructor() {
@@ -20,9 +21,21 @@ class LteWS {
     startListen() {
         const {listen, wrap} = this.ws;
 
-        listen('hello', (data, res) => {
-            wrap(res, data, EnumErrorDefine.ERR_UNKNOWN);
-        });
+        listen('hello', this.handler(Hello));
+
+        listen('setAutoModEarfcn',this.handler(SetAutoModEarfcn))
+    }
+
+    handler(func) {
+        const {listen, wrap} = this.ws;
+        return (data, res) => {
+            try {
+                const [err, resData] = func(data) || [];
+                wrap(res, resData, err);
+            } catch (e) {// 捕捉意外的异常 返回ERR_UNKNOWN
+                wrap(res, null, e);
+            }
+        };
     }
 
     emitAsync(...rest) {

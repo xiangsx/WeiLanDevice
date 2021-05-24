@@ -3,3 +3,5 @@ export const LTEWSCfg = {
     port: '80',
     namespace: '/lte'
 }
+
+export const DEFAULT_HOST_LIST = ['192.168.2.53', '192.168.2.54'];

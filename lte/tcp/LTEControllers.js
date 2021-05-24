@@ -1775,6 +1775,15 @@ export const getAllLteCtrl = () => {
     return deviceList;
 };
 
+export const getLteCtrlMap = () => {
+    const lteCtrlList = getAllLteCtrl();
+    let lteCtrlMap = {};
+    for (const lteCtrl of lteCtrlList) {
+        lteCtrlMap[lteCtrl.host] = lteCtrl;
+    }
+    return lteCtrlMap;
+};
+
 export function startAllLte() {
     const itr = LteCtrlMap.values();
     let lteCtl = itr.next().value;

@@ -1,15 +1,17 @@
 import WSClient from '../../utils/WSClient';
-import {LTEWSCfg} from '../../config/config.js'
+import Config from '../../config/config.js'
 import {EnumErrorDefine} from '../../define/error'
 import {generateDeviceID} from '../../utils/tools'
 import {EnumDeviceType} from "../../define/device";
 import {EnumWSRoutes} from '../define/server';
 import {Hello, SetAutoModEarfcn} from "./controller";
 
+const {wsServerCfg} = Config;
+
 class LteWS {
     constructor() {
         this.deviceID = generateDeviceID(EnumDeviceType.LTE);
-        this.ws = new WSClient(`${LTEWSCfg.host}:${LTEWSCfg.port}`, LTEWSCfg.namespace,
+        this.ws = new WSClient(`${wsServerCfg.host}:${wsServerCfg.port}`, wsServerCfg.namespace,
             {query: {deviceID: this.deviceID}});
         this.startListen();
     }

@@ -1,0 +1,130 @@
+{
+    "wsServerCfg": {
+        "host": "127.0.0.1",
+        "port": "80",
+        "namespace": "/lte"
+    },
+    "autoModEarfcn": {
+        "192.168.2.53": [
+            37900
+        ],
+        "192.168.2.54": [
+            38400
+        ]
+    },
+    "lteCellInfo": {
+        "192.168.2.53": {
+            "Frame": {
+                "value": 255,
+                "text": "TDD"
+            },
+            "Band": 3,
+            "settingCellInfo": {
+                "ulEarfcn": 0,
+                "dlEarfcn": 0,
+                "Band": 0,
+                "PLMN": 0,
+                "CellId": 0,
+                "UePMax": 0
+            },
+            "ulEarfcn": 255,
+            "dlEarfcn": 37900,
+            "PLMN": "46000",
+            "SOFTWARE_VERSION": "",
+            "Bandwidth": {
+                "value": 100,
+                "text": "20M"
+            },
+            "PCI": 1,
+            "RxGainValueFromReg": 0,
+            "RxGainValueFromMib": 0,
+            "Pwr1Derease": 0,
+            "PowerDereaseValueFromReg": 0,
+            "PowerDereaseValueFromMib": 0,
+            "AgcFlag": 0,
+            "SnfRxGainValueFromReg": 0,
+            "SnfRxGainValueFromMib": 0,
+            "RxOrSnfFlag": 0,
+            "dlEarfcnList": [],
+            "blackControlList": [],
+            "whiteControlList": [],
+            "earfcnAutoModing": false,
+            "modInterval": 5,
+            "boardTemperature": 0,
+            "bandPwrdereaseMap": {},
+            "Longitude": 119.9800033569336,
+            "Latitude": 39.22999954223633,
+            "Altitude": 200,
+            "MeasUECfg": {
+                "WorkMode": 0,
+                "RedirectSubMode": 4,
+                "CapturePeriod": 5,
+                "IMSI": "",
+                "MeasReportPeriod": 3,
+                "SchdUeMaxPowerTxFlag": 0,
+                "SchdUeMaxPowerValue": 23,
+                "SchdUeUlFixedPrbSwitch": 0,
+                "CampOnAllowedFlag": 0,
+                "SrsSwitch": 0,
+                "ControlSubMode": 0
+            }
+        },
+        "192.168.2.54": {
+            "Frame": {
+                "value": 255,
+                "text": "TDD"
+            },
+            "Band": 3,
+            "settingCellInfo": {
+                "ulEarfcn": 0,
+                "dlEarfcn": 0,
+                "Band": 0,
+                "PLMN": 0,
+                "CellId": 0,
+                "UePMax": 0
+            },
+            "ulEarfcn": 255,
+            "dlEarfcn": 37900,
+            "PLMN": "46000",
+            "SOFTWARE_VERSION": "",
+            "Bandwidth": {
+                "value": 100,
+                "text": "20M"
+            },
+            "PCI": 1,
+            "RxGainValueFromReg": 0,
+            "RxGainValueFromMib": 0,
+            "Pwr1Derease": 0,
+            "PowerDereaseValueFromReg": 0,
+            "PowerDereaseValueFromMib": 0,
+            "AgcFlag": 0,
+            "SnfRxGainValueFromReg": 0,
+            "SnfRxGainValueFromMib": 0,
+            "RxOrSnfFlag": 0,
+            "dlEarfcnList": [],
+            "blackControlList": [],
+            "whiteControlList": [],
+            "earfcnAutoModing": false,
+            "modInterval": 5,
+            "boardTemperature": 0,
+            "bandPwrdereaseMap": {},
+            "Longitude": 119.9800033569336,
+            "Latitude": 39.22999954223633,
+            "Altitude": 200,
+            "MeasUECfg": {
+                "WorkMode": 0,
+                "RedirectSubMode": 4,
+                "CapturePeriod": 5,
+                "IMSI": "",
+                "MeasReportPeriod": 3,
+                "SchdUeMaxPowerTxFlag": 0,
+                "SchdUeMaxPowerValue": 23,
+                "SchdUeUlFixedPrbSwitch": 0,
+                "CampOnAllowedFlag": 0,
+                "SrsSwitch": 0,
+                "ControlSubMode": 0
+            }
+        }
+    },
+    "configLocalFilePath": "config/default.local.json"
+}

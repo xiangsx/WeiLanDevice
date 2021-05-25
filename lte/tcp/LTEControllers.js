@@ -40,6 +40,10 @@ import {getCarrieroperator} from '../utils/imsiUtil';
 import {getOtherDataByEarfcn, getRandomCellID, getRandomTAC} from '../utils/ArfcnUtils';
 import {EnumErrorDefine} from "../../define/error";
 import {Emitter, EVENTS} from "../events";
+import Config from '../../config/config';
+import config from "../../config/config";
+
+const {lteCellInfo} = Config;
 
 /**
  *
@@ -219,24 +223,8 @@ export class LTEControllers {
     };
 
     checkIfNeedAutoModEarfcn() {
-        if (!LOCATION_TARGET_LOST_START_AUTO_MOD_EARFCN) {
-            return;
-        }
-        const {MeasUECfg, status, earfcnAutoModing, Frame} = this._cellInfo;
-        const {WorkMode, IMSI} = MeasUECfg;
-        if (status.value === EnumLTEStatus.ACTIVATED
-            && WorkMode === EnumWorkMode.LOCATION_MODE
-            && !earfcnAutoModing
-            && IMSI === this._latestMeasInfo.IMSI
-            && moment().unix() - moment(this._latestMeasInfo.prtTime).unix() >= LTE_LOCATION_PRT_OVERTIME) {
-            const earfcnMap = this.getNearbyEarfcnMap(Frame.value);
-            const operator = getCarrieroperator(IMSI);
-            const earfcnList = earfcnMap[operator.key] || [];
-            if (earfcnList || earfcnList.length > 0) {
-                this.setModEarfcnInfo(earfcnList, DEFAULT_AUTO_MOD_EARFCN_INTERVAL);
-            }
-            else {
-            }
+        const {status, earfcnAutoModing} = this._cellInfo;
+        if (status.value === EnumLTEStatus.ACTIVATED && earfcnAutoModing) {
             this.startAutoModEarfcn();
         }
     }
@@ -306,10 +294,14 @@ export class LTEControllers {
                 this.debug(
                     `client  updated info is :[${JSON.stringify(this._cellInfo)}]`);
                 Emitter.emit(EVENTS.CellInfoChanged, {host: this.host, cellInfo: this._cellInfo});
+                Config.lteCellInfo = {
+                    ...lteCellInfo,
+                    [this.host]: this._cellInfo
+                }
             }
         }
         else {
-            this.error(`LTEComtroller._updateCellInfo :client  recv invalid info: ${infos}`);
+            this.error(`LTEController._updateCellInfo :client  recv invalid info: ${infos}`);
         }
     };
 
@@ -1430,10 +1422,10 @@ export class LTEControllers {
                     }
                 }
             }
+            this._updateCellInfo({dlEarfcnList: earfcnList, modInterval: interval});
             if (interval !== this._cellInfo.modInterval && this._cellInfo.earfcnAutoModing) {
                 this.startAutoModEarfcn();
             }
-            this._updateCellInfo({dlEarfcnList: earfcnList, modInterval: interval});
         }
         else {
             this.error(`LTEController.setModEarfcnInfo invalid arguments,arg:${JSON.stringify({
@@ -1461,12 +1453,12 @@ export class LTEControllers {
      * 开启自动轮询频点
      */
     startAutoModEarfcn() {
-        if (this._cellInfo.dlEarfcnList.length === 0) {
-            this.warn(`device  has no dlEarfcnList, please add first`);
+        if (this._cellInfo.status.value !== EnumLTEStatus.ACTIVATED) {
+            this.warn(`startAutoModEarfcn failed, status:${this._cellInfo.status}`);
             return;
         }
-        if (this._cellInfo.status.value !== EnumLTEStatus.ACTIVATED) {
-            this._updateCellInfo({earfcnAutoModing: false});
+        if (this._cellInfo.dlEarfcnList.length === 0) {
+            this.warn(`startAutoModEarfcn failed, dlEarfcnList:${this._cellInfo.dlEarfcnList}`);
             return;
         }
         if (this._cellInfo.earfcnAutoModing) {
@@ -1476,13 +1468,19 @@ export class LTEControllers {
         }
         this.autoModEarfcnProcess = setInterval(() => {
             if (this._cellInfo.status.value !== EnumLTEStatus.ACTIVATED) {
-                this.stopAutoModEarfcn();
+                this.warn(`device  has no dlEarfcnList, please add`);
+                return;
+            }
+            if (this._cellInfo.dlEarfcnList.length === 0) {
+                this.warn(`device  has no dlEarfcnList, please add`);
                 return;
             }
             const nextDlEarfcn = this._getNextEarfcnToMod();
-            this.log(`device  auto mod earfcn from [${
-                this._cellInfo.dlEarfcn}] to [${nextDlEarfcn}]`);
-            this.sendEarfcnMod(nextDlEarfcn);
+            if (nextDlEarfcn !== this._cellInfo.dlEarfcn) {
+                this.log(`device  auto mod earfcn from [${
+                    this._cellInfo.dlEarfcn}] to [${nextDlEarfcn}]`);
+                this.sendEarfcnMod(nextDlEarfcn);
+            }
         }, this._cellInfo.modInterval * 1000);
         this._updateCellInfo({earfcnAutoModing: true});
     }
@@ -1737,33 +1735,6 @@ export function createLteCtrls (lteCellInfos) {
     }
 }
 
-/**
- *
- * @param host IP地址
- * @return {LTEControllers}
- */
-export const getLteCtrl = (host) => {
-    return LteCtrlMap.get(host);
-};
-
-/**
- * 获取所有设备属性
- * @return {{host:string,cellInfo:CellInfo}[]}
- */
-export const getAllLteDevice = () => {
-    const deviceList = {};
-    const itr = LteCtrlMap.values();
-    let lteCtl = itr.next().value;
-    while (lteCtl) {
-        deviceList[lteCtl.host] = {
-            host: lteCtl.host,
-            cellInfo: lteCtl.getCellInfo()
-        };
-        lteCtl = itr.next().value;
-    }
-    return deviceList;
-};
-
 export const getAllLteCtrl = () => {
     const deviceList = [];
     const itr = LteCtrlMap.values();
@@ -1784,29 +1755,14 @@ export const getLteCtrlMap = () => {
     return lteCtrlMap;
 };
 
-export function startAllLte() {
-    const itr = LteCtrlMap.values();
-    let lteCtl = itr.next().value;
-    const startList = [];
-    while (lteCtl) {
-        if (lteCtl.getCellInfo().status.value === EnumLTEStatus.CONNECTED) {
-            startList.push(lteCtl);
-        }
-        lteCtl = itr.next().value;
-    }
-    for (const lte of startList) {
-        lte.activateLTEWithLastCellInfo();
-    }
-    return startList;
-}
+export const initLteCtrl = () => {
+    createLteCtrls(lteCellInfo);
+};
 
-export function stopAllLteCell() {
-    const itr = LteCtrlMap.values();
-    let lteCtl = itr.next().value;
-    while (lteCtl) {
-        if (lteCtl.getCellInfo().status.value === EnumLTEStatus.ACTIVATED) {
-            lteCtl.sendSetAdminStateCfg(0);
-        }
-        lteCtl = itr.next().value;
-    }
+/**
+ * @param host
+ * @return {LTEControllers}
+ */
+export function getLteCtrl(host) {
+    return LteCtrlMap.get(host);
 }

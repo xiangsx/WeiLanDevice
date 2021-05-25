@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import {DEVICE_ID_FILE_PATH, DeviceTypeMap, EnumDeviceType} from "../define/device.js";
 import fs from 'fs';
 import assert from 'assert';
+import path from 'path';
 
 /**
  * 生成设备ID
@@ -28,6 +29,18 @@ export function generateDeviceID(deviceType) {
     return deviceID
 }
 
+export function mkdirsMultiDirSync(dirname) {
+    if (fs.existsSync(dirname)) {
+        return true;
+    } else {
+        if (mkdirsMultiDirSync(path.dirname(dirname))) {
+            fs.mkdirSync(dirname);
+            return true;
+        }
+    }
+}
+
 if (require.main === module) {
     console.log(generateDeviceID(EnumDeviceType.LTE));
+    mkdirsMultiDirSync('config/config/default.local.json');
 }

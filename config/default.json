@@ -4,14 +4,6 @@
         "port": "80",
         "namespace": "/lte"
     },
-    "autoModEarfcn": {
-        "192.168.2.53": [
-            37900
-        ],
-        "192.168.2.54": [
-            38400
-        ]
-    },
     "lteCellInfo": {
         "192.168.2.53": {
             "Frame": {
@@ -45,7 +37,7 @@
             "SnfRxGainValueFromReg": 0,
             "SnfRxGainValueFromMib": 0,
             "RxOrSnfFlag": 0,
-            "dlEarfcnList": [],
+            "dlEarfcnList": [37900],
             "blackControlList": [],
             "whiteControlList": [],
             "earfcnAutoModing": false,
@@ -101,7 +93,7 @@
             "SnfRxGainValueFromReg": 0,
             "SnfRxGainValueFromMib": 0,
             "RxOrSnfFlag": 0,
-            "dlEarfcnList": [],
+            "dlEarfcnList": [38400],
             "blackControlList": [],
             "whiteControlList": [],
             "earfcnAutoModing": false,

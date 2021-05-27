@@ -1,20 +1,43 @@
 import {getLteCtrl, getLteCtrlMap} from "../tcp/LTEControllers";
+import {EnumErrorDefine} from "../../define/error";
 
+const configMap = new Map();
 export const Hello = () => {
     return [null, 'hello'];
 };
 
-export const SetAutoModEarfcn = (data) => {
-    for (const host in data) {
-        const {dlEarfcnList, earfcnAutoModing, modInterval} = data[host];
-        const lteCtrl = getLteCtrl(host);
-        lteCtrl.setModEarfcnInfo(dlEarfcnList, modInterval);
-        if (earfcnAutoModing) {
-            lteCtrl.startAutoModEarfcn();
+/**
+ * 统一处理key
+ * @param data
+ * @return {number[]|*}
+ * @constructor
+ */
+export const HandleConfig = (data) => {
+    const {configKey, configData} = data;
+    if (configKey) {
+        if (!Number.isNaN(parseInt(configKey))) {
         }
         else {
-            lteCtrl.stopAutoModEarfcn();
+            if (configMap.has(configKey)) {
+                return configMap.get(configKey)(configData);
+            }
         }
     }
-    return [null, null];
+    else {
+        console.warn(`invalid configKey [${configKey}]`);
+    }
+    return [EnumErrorDefine.ERR_INVALID_CONFIG_KEY];
 };
+
+configMap.set('SetAutoModEarfcn', (data) => {
+    const {dlEarfcnList, earfcnAutoModing, modInterval, host} = data;
+    const lteCtrl = getLteCtrl(host);
+    lteCtrl.setModEarfcnInfo(dlEarfcnList, modInterval);
+    if (earfcnAutoModing) {
+        lteCtrl.startAutoModEarfcn();
+    }
+    else {
+        lteCtrl.stopAutoModEarfcn();
+    }
+    return [null, null];
+});

@@ -22,7 +22,6 @@
   "homepage": "https://github.com/xiangsx/WeiLanDevice#readme",
   "dependencies": {
     "babel-polyfill": "^6.26.0",
-    "better-sqlite3": "^7.1.2",
     "coordtransform": "^2.1.2",
     "esm": "^3.2.25",
     "log4js": "^6.3.0",

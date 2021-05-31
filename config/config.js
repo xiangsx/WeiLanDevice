@@ -39,5 +39,11 @@ export default {
     },
     set lteCellInfo(value) {
         setCfg({lteCellInfo: value});
-    }
+    },
+    get ueList() {
+        return config.ueList || [];
+    },
+    set ueList(value) {
+        setCfg({ueList: value});
+    },
 };

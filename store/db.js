@@ -1,53 +1,27 @@
-import Database from 'better-sqlite3';
 import path from 'path';
-import {table} from './dbInit';
+import Config from '../config/config';
 
 const dbPath = path.join(__dirname, './ss.db');
 
 let db;
 
-export function initDB() {
-    db = new Database(dbPath, {verbose: console.debug});
-    db.exec(table)
-}
-
 export function getOfflineUEList() {
-    const now = new Date().getTime();
-    const stmt = db.prepare('SELECT * from ue where prtTime <= ?');
-    const rows = stmt.all(now);
+    const lenNow = Config.ueList.length;
+    const rows = Config.ueList.slice(0, lenNow);
     return {
         rows,
         deleteRows: () => {
-            try {
-                const stmt = db.prepare('DELETE FROM ue WHERE prtTime <= ?');
-                return stmt.run(now).changes;
-            } catch (e) {
-                if (e) {
-                    console.error('delete data failed, error = ', e);
-                    return 0;
-                }
-            }
+            Config.ueList = Config.ueList.slice(lenNow, Config.ueList.length);
         }
     };
 }
 
-export function saveOfflineUE(ueList) {
-    try {
-        const stmt = db.prepare('INSERT INTO UE (IMSI,IMEI,RSSI,prtTime) VALUES (@IMSI,@IMEI,@RSSI,@prtTime)');
-        for (const ueInfo of ueList) {
-            stmt.run(ueInfo);
-        }
-        return ueList.length;
-    } catch (err) {
-        if (err) {
-            console.error('saveOfflineUE failed, err = ', err);
-            return 0;
-        }
-    }
+export function saveOfflineUE(list) {
+    Config.ueList = Config.ueList.concat(list);
+    return Config.ueList.length;
 }
 
 if (require.main === module) {
-    initDB();
     const {rows, deleteRows} = getOfflineUEList();
     console.log(rows.length);
 }

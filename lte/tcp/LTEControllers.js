@@ -36,14 +36,10 @@ import {
     TEMPERATURE_ALERT,
     TIME_FORMAT,
 } from '../define/constants';
-import {getCarrieroperator} from '../utils/imsiUtil';
 import {getOtherDataByEarfcn, getRandomCellID, getRandomTAC} from '../utils/ArfcnUtils';
 import {EnumErrorDefine} from "../../define/error";
 import {Emitter, EVENTS} from "../events";
 import Config from '../../config/config';
-import config from "../../config/config";
-
-const {lteCellInfo} = Config;
 
 /**
  *
@@ -295,7 +291,7 @@ export class LTEControllers {
                     `client  updated info is :[${JSON.stringify(this._cellInfo)}]`);
                 Emitter.emit(EVENTS.CellInfoChanged, {host: this.host, cellInfo: this._cellInfo});
                 Config.lteCellInfo = {
-                    ...lteCellInfo,
+                    ...Config.lteCellInfo,
                     [this.host]: this._cellInfo
                 }
             }
@@ -1756,7 +1752,7 @@ export const getLteCtrlMap = () => {
 };
 
 export const initLteCtrl = () => {
-    createLteCtrls(lteCellInfo);
+    createLteCtrls(Config.lteCellInfo);
 };
 
 /**

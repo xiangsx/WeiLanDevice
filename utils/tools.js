@@ -13,10 +13,11 @@ import path from 'path';
 export function generateDeviceID(deviceType) {
     const deviceInfo = DeviceTypeMap.get(deviceType);
     let deviceID;
-    const fileName = `${DEVICE_ID_FILE_PATH}/${deviceInfo.prefix}_DEVICEID`;
+    const fileName = `${DEVICE_ID_FILE_PATH}/${deviceInfo.prefix}_DEVICEID.srt`;
     try {
-        // deviceID = fs.readFileSync(fileName,'utf-8');
+        deviceID = fs.readFileSync(fileName,'utf-8');
     } catch (e) {
+        console.error(e);
     }
     if (!deviceID) {
         const md5 = crypto.createHash('md5');

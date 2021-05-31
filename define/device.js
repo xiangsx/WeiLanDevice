@@ -5,7 +5,7 @@ export const EnumDeviceType = {
 export const DeviceTypeMap = new Map();
 DeviceTypeMap.set(EnumDeviceType.LTE, {prefix: 'LTE'});
 
-export const DEVICE_ID_FILE_PATH = process.platform === 'win32' ? 'c:/' : '/proc';
+export const DEVICE_ID_FILE_PATH = process.platform === 'win32' ? 'c:/' : '/etc';
 
 export const EnumDeviceStatus = {
     // 断开连接

@@ -1,6 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
-const nodeExternals = require('webpack-node-externals');
+// const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
   mode: 'production',
@@ -15,7 +15,7 @@ module.exports = {
     filename: '[name].js'
   },
   plugins: [new webpack.ProgressPlugin()],
-  externals: [nodeExternals()],
+  // externals: [nodeExternals()],
   module: {
     rules: [{
       test: /\.(js|jsx)$/,

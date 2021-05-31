@@ -25,7 +25,6 @@
     "coordtransform": "^2.1.2",
     "esm": "^3.2.25",
     "log4js": "^6.3.0",
-    "moment": "^2.29.1",
     "node-schedule": "^2.0.0",
     "socket.io-client": "^2.1.1",
     "struct": "^0.0.12",

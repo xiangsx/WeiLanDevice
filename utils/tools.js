@@ -41,6 +41,10 @@ export function mkdirsMultiDirSync(dirname) {
     }
 }
 
+export function nowUnix() {
+    return Math.floor(new Date().getTime() / 1000);
+}
+
 if (require.main === module) {
     console.log(generateDeviceID(EnumDeviceType.LTE));
     mkdirsMultiDirSync('config/config/default.local.json');

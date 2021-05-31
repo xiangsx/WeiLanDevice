@@ -1,4 +1,3 @@
-import moment from 'moment';
 import {
     AUTO_MODING_BAN_MSGTYPE_LIST,
     BandwidthMap,
@@ -29,10 +28,8 @@ import {
     DEFAULT_AUTO_MOD_EARFCN_INTERVAL,
     IF_LIMIT_ADDRESS_CONNECT,
     LIMIT_ADDRESS_LIST,
-    LOCATION_TARGET_LOST_START_AUTO_MOD_EARFCN,
     LTE_ACK_CHECK_INTERVAL,
     LTE_ACK_TIMEOUT,
-    LTE_LOCATION_PRT_OVERTIME,
     TEMPERATURE_ALERT,
     TIME_FORMAT,
 } from '../define/constants';
@@ -40,6 +37,7 @@ import {getOtherDataByEarfcn, getRandomCellID, getRandomTAC} from '../utils/Arfc
 import {EnumErrorDefine} from "../../define/error";
 import {Emitter, EVENTS} from "../events";
 import Config from '../../config/config';
+import {nowUnix} from '../../utils/tools'
 
 /**
  *
@@ -404,7 +402,7 @@ export class LTEControllers {
         this.cbMap[key] = {
             cb,
             // 回调注册时间 毫秒
-            time: moment().unix(),
+            time: nowUnix(),
             cfgMsgType,
             ackMsgType,
             timeout,
@@ -439,10 +437,10 @@ export class LTEControllers {
             for (const key in this.cbMap) {
                 const cbInfo = this.cbMap[key];
                 const {cb, timeout, time} = cbInfo;
-                if (moment().unix() - time > (timeout || LTE_ACK_TIMEOUT)) {
+                if (nowUnix() - time > (timeout || LTE_ACK_TIMEOUT)) {
                     this.error(`callback ${key} timeout`);
                     cb(EnumErrorDefine.ERR_LTE_QUERY_TIMEOUT);
-                    this.error(`clear lte callback key:[${key}] now:[${moment().unix()}] start:[${time}]`);
+                    this.error(`clear lte callback key:[${key}] now:[${nowUnix()}] start:[${time}]`);
                     delete this.cbMap[key];
                 }
             }
@@ -793,7 +791,7 @@ export class LTEControllers {
             IMSI,
             UeMeasValue: handledUeMeasValue,
             ProtocolVer,
-            prtTime: moment().format(TIME_FORMAT),
+            prtTime: nowUnix(),
             earfcn: this._cellInfo.dlEarfcn || '未知',
             // ueDistance: Math.floor(ueDistance <= 0 ? 0 : ueDistance),
         };

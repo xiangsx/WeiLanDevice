@@ -1,5 +1,3 @@
-import moment from 'moment';
-
 import {Emitter, EVENTS} from './events'
 import {getAllLteCtrl} from "./tcp/LTEControllers";
 import {EnumLTEStatus} from "./define/LTEProto";
@@ -8,6 +6,7 @@ import {EnumWSRoutes} from "./define/server";
 import lteWS from "./server/ws";
 import {LTE_DEVICE_INFO_UPDATE_MAX_INTERVAL} from "./define/constants";
 import coordtransform from 'coordtransform';
+import {nowUnix} from "../utils/tools";
 
 class LteCenter {
     constructor() {
@@ -25,7 +24,7 @@ class LteCenter {
                 Altitude: 0,
             },
             deviceType: EnumDeviceType.LTE,
-            updateTime: moment().unix(),
+            updateTime: nowUnix(),
             deviceDetails: []
         }
     }
@@ -105,13 +104,13 @@ class LteCenter {
 
     async syncDeviceInfo() {
         if (!this.deviceInfoChanged
-            && moment().unix() - this.deviceInfo.updateTime < LTE_DEVICE_INFO_UPDATE_MAX_INTERVAL) {
+            && nowUnix() - this.deviceInfo.updateTime < LTE_DEVICE_INFO_UPDATE_MAX_INTERVAL) {
             return;
         }
         if (!lteWS.connected()) {
             return;
         }
-        this.deviceInfo.updateTime = moment().unix();
+        this.deviceInfo.updateTime = nowUnix();
         const result = await lteWS.emitAsync(EnumWSRoutes.SyncDeviceInfo, {
             ...this.deviceInfo,
             save: this.deviceInfoChanged

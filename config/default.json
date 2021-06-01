@@ -5,6 +5,51 @@
         "namespace": "/lte"
     },
     "ueList": [],
+    "log": {
+        "appenders": {
+            "fileError": {
+                "type": "file",
+                "filename": "logs/error.log",
+                "layout": {
+                    "type":"pattern",
+                    "pattern": "[%r] [%p] - %m"
+                }
+            },
+            "fileDefault": {
+                "daysToKeep": 7,
+                "keepFileExt": true,
+                "type": "dateFile",
+                "pattern": ".yyyy-MM-dd",
+                "filename": "logs/all/default.log",
+                "compress": true,
+                "layout": {
+                    "type":"pattern",
+                    "pattern": "[%r] [%p] - %m"
+                }
+            },
+            "console": {
+                "type": "console"
+            }
+        },
+        "categories": {
+            "error": {
+                "appenders": [
+                    "console",
+                    "fileError",
+                    "fileDefault"
+                ],
+                "level": "error"
+            },
+            "default": {
+                "appenders": [
+                    "console",
+                    "fileDefault"
+                ],
+                "level": "trace"
+            }
+        },
+        "pm2": true
+    },
     "lteCellInfo": {
         "192.168.2.53": {
             "Frame": {

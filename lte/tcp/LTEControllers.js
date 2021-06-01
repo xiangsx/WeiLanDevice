@@ -237,7 +237,7 @@ export class LTEControllers {
      * @param infos
      */
     _updateCellInfo = (infos) => {
-        this.debug(` updating cellInfos:`, JSON.stringify(infos));
+        this.log(` updating cellInfos:`, JSON.stringify(infos));
         if (infos) {
             let cellInfoChanged = false;
             for (const key in infos) {

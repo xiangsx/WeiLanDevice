@@ -1,7 +1,9 @@
 'use strict';
 
 import log4js from 'log4js';
-import logCfg from '../config/log.json'
+import Config from '../config/config'
+
+const {log: logCfg} = Config;
 
 export function initLog(filename) {
     logCfg.appenders.fileDefault.filename = `logs/${filename}/default.log`

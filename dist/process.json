@@ -1,0 +1,11 @@
+{
+    "script": "lte",
+    "watch": true,
+    "ignore_watch": ["log","config"],
+    "watch_options": {
+        "followSymlinks": false
+    },
+    "name": "lte",
+    "error_file": "",
+    "out_file": ""
+}

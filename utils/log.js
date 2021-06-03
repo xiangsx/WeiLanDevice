@@ -20,3 +20,5 @@ export function initLog(filename) {
     console.warn = defaultLog.warn.bind(defaultLog);
     console.error = errorLog.error.bind(errorLog);
 }
+
+initLog('lte');

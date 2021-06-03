@@ -4,22 +4,34 @@ import defaultConfig from './default.json';
 import {mkdirsMultiDirSync} from '../utils/tools';
 
 let config = defaultConfig;
+const configRunFilePath = defaultConfig.configRunFilePath;
 const configLocalFilePath = defaultConfig.configLocalFilePath;
 
 function initConfig() {
     try {
-        mkdirsMultiDirSync(path.dirname(configLocalFilePath));
-        const fileConfig = JSON.parse(fs.readFileSync(configLocalFilePath, 'utf-8'));
+        let localConfig = {};
+        for (const filePath of configLocalFilePath) {
+            if (fs.existsSync(filePath)) {
+                const thisConf = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+                localConfig = {
+                    ...localConfig,
+                    ...thisConf,
+                };
+            }
+        }
+        mkdirsMultiDirSync(path.dirname(configRunFilePath));
+        const runConfig = JSON.parse(fs.readFileSync(configRunFilePath, 'utf-8'));
         config = {
             ...defaultConfig,
-            ...fileConfig
+            ...runConfig,
+            ...localConfig,
         };
     } catch (err) {
         if (err) {
             console.error(err);
         }
     }
-    fs.writeFileSync(configLocalFilePath, JSON.stringify(config));
+    fs.writeFileSync(configRunFilePath, JSON.stringify(config));
 }
 
 initConfig();
@@ -28,7 +40,7 @@ function setCfg(cfgObj) {
     for (let key in cfgObj) {
         config[key] = cfgObj[key];
     }
-    fs.writeFileSync(configLocalFilePath, JSON.stringify(config));
+    fs.writeFileSync(configRunFilePath, JSON.stringify(config));
 }
 
 export default {

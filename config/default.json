@@ -164,5 +164,6 @@
             }
         }
     },
-    "configLocalFilePath": "config/default.local.json"
+    "configRunFilePath": "config/default.run.json",
+    "configLocalFilePath": ["config/default.local.json"]
 }

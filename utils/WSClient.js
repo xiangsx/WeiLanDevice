@@ -1,4 +1,5 @@
 import io from 'socket.io-client';
+import domain from 'domain';
 import {EnumErrorDefine, ErrorMap} from '../define/error'
 
 class WSClient {
@@ -51,7 +52,12 @@ class WSClient {
     listen = (event, handle) => {
         this.socket.on(event, (data, res) => {
             this.log(`ltews listened event[${event}] data[${JSON.stringify(data)}]`);
-            handle(data, res);
+            const newDomain = domain.create();
+            newDomain.run(() => handle(data, res));
+            newDomain.on('error', (err) => {
+                console.error(err);
+                this.wrap(res, err.message, EnumErrorDefine.ERR_UNKNOWN);
+            });
         });
     }
 

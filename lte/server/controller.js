@@ -1,4 +1,4 @@
-import {getLteCtrl, getLteCtrlMap} from "../tcp/LTEControllers";
+import {getLteCtrl} from "../tcp/LTEControllers";
 import {EnumErrorDefine} from "../../define/error";
 
 const configMap = new Map();
@@ -32,12 +32,10 @@ export const HandleConfig = (data) => {
 configMap.set('SetAutoModEarfcn', (data) => {
     const {dlEarfcnList, earfcnAutoModing, modInterval, host} = data;
     const lteCtrl = getLteCtrl(host);
-    lteCtrl.setModEarfcnInfo(dlEarfcnList, modInterval);
-    if (earfcnAutoModing) {
-        lteCtrl.startAutoModEarfcn();
-    }
-    else {
-        lteCtrl.stopAutoModEarfcn();
-    }
+    lteCtrl.setModEarfcnInfo({
+        earfcnAutoModing: !!earfcnAutoModing,
+        dlEarfcnList: dlEarfcnList.map(item => parseInt(item)).filter(item => Number.isInteger(item)),
+        modInterval: parseInt(modInterval)
+    });
     return [null, null];
 });

@@ -31,9 +31,15 @@ import {
     LTE_ACK_CHECK_INTERVAL,
     LTE_ACK_TIMEOUT,
     TEMPERATURE_ALERT,
-    TIME_FORMAT,
 } from '../define/constants';
-import {getOtherDataByEarfcn, getRandomCellID, getRandomTAC} from '../utils/ArfcnUtils';
+import {
+    getBandFromEarfcn,
+    getOtherDataByEarfcn,
+    getPLMNFormEarfcn,
+    getRandomCellID,
+    getRandomPCI,
+    getRandomTAC
+} from '../utils/ArfcnUtils';
 import {EnumErrorDefine} from "../../define/error";
 import {Emitter, EVENTS} from "../events";
 import Config from '../../config/config';
@@ -80,40 +86,6 @@ export class LTEControllers {
         this.autoModEarfcnProcess = setInterval;
         // 75度处理
         this.temperatureAlertTimes75 = 0;
-        /**
-         * 小区详细信息
-         * @typedef  {{
-         * Frame: {value: number, text: string},
-         * dlEarfcn: number,
-         * ulEarfcn: number,
-         * Bandwidth: {value: number, text: string},
-         * PCI: number,
-         * TAC: number,
-         * PLMN: string,
-         * Band: number,
-         * status: {text: string, value: (number|EnumLTEStatus)},
-         * MeasUECfg: {},
-         * dlEarfcnList:Array
-         * blackControlList:Array
-         * whiteControlList:Array
-         * earfcnAutoModing:boolean
-         * modInterval:number
-         * bandPwrdereaseMap:Object
-         * Pwr1Derease:number
-         * settingCellInfo:{
-         *     ulEarfcn:number
-         *     dlEarfcn:number
-         *     Band:number
-         *     PLMN:number
-         *     CellId:number
-         *     UePMax:number
-         * }
-         * }} CellInfo
-         */
-
-        /**
-         * @type {CellInfo} 小区信息
-         */
         this._cellInfo = {
             Frame: SysModeMap.get(EnumSysMode.FDD),
             Band: 0,
@@ -144,6 +116,7 @@ export class LTEControllers {
             blackControlList: [],
             whiteControlList: [],
             earfcnAutoModing: false,
+            lastModUnix: 0,
             modInterval: DEFAULT_AUTO_MOD_EARFCN_INTERVAL,
             boardTemperature: 0,
             bandPwrdereaseMap: {},
@@ -212,16 +185,8 @@ export class LTEControllers {
     _intervalQuery = () => {
         if (this._cellInfo.status.value !== EnumLTEStatus.DISCONNECTED) {
             this.sendBaseInfoQuery(EnumBaseInfoType.BOARD_TEMPERATURE);
-            this.checkIfNeedAutoModEarfcn();
         }
     };
-
-    checkIfNeedAutoModEarfcn() {
-        const {status, earfcnAutoModing} = this._cellInfo;
-        if (status.value === EnumLTEStatus.ACTIVATED && earfcnAutoModing) {
-            this.startAutoModEarfcn();
-        }
-    }
 
     /**
      * 获取小区基本信息
@@ -348,9 +313,6 @@ export class LTEControllers {
                 this.sendBaseInfoQuery(EnumBaseInfoType.SOFTWARE_VERSION);
             },
         ];
-        if (this._cellInfo.earfcnAutoModing) {
-            funList.push(this.startAutoModEarfcn);
-        }
         for (let i = 0; i < funList.length; i += 1) {
             setTimeout(() => {
                 funList[i].call(this);
@@ -671,6 +633,10 @@ export class LTEControllers {
         }
     }
 
+    timeIntervalFunc = () => {
+        this.checkAutoMod().then(_ => this.debug('checkAutoMod successful'));
+    };
+
     _sendDataAsync(data) {
         return new Promise(resolve => {
             this._lteClient.sendData(data, () => {
@@ -728,11 +694,11 @@ export class LTEControllers {
     async packAndSendMsgAsync(msgType, msgBody, bAck = false) {
         if (this._cellInfo.status.value === EnumLTEStatus.DISCONNECTED || !this._lteClient) {
             this.warn(`client  disconnected, cannot send data to client`);
-            return EnumErrorDefine.ERR_LTE_DISCONNECTED;
+            throw EnumErrorDefine.ERR_LTE_DISCONNECTED;
         }
         if (this._cellInfo.earfcnAutoModing && AUTO_MODING_BAN_MSGTYPE_LIST.includes(msgType)) {
             this.log(`client auto modify earfcn, if you want use other command , stop it first`);
-            return EnumErrorDefine.ERR_LTE_STATUS_EXCEPTION;
+            throw EnumErrorDefine.ERR_LTE_STATUS_EXCEPTION;
         }
         let bodyBuf;
         if (!msgBody) {
@@ -877,7 +843,7 @@ export class LTEControllers {
             }
             if (CellStateInd === EnumEnbState.WR_FL_ENB_STATE_AIR_SYNC_FAIL) {
                 if (this._airSyncFailedRetryTimes > 0) {
-                    this.activateLTEWithLastCellInfo();
+                    this.activateLTEWithLastCellInfoAsync().then();
                     this._airSyncFailedRetryTimes -= 1;
                 }
                 else {
@@ -995,7 +961,7 @@ export class LTEControllers {
      * @param {{dlEarfcn:number,PLMN:string,Bandwidth:number,Band:number,PCI:number,TAC:number,CellId:number
      * }} ServingCellCfgInfo
      */
-    sendSycArfcnCfg(ServingCellCfgInfo) {
+    async sendSycArfcnCfgAsync(ServingCellCfgInfo) {
         const {dlEarfcn, PLMN, Bandwidth, Band, PCI, TAC, CellId} = ServingCellCfgInfo;
         const bandLimitList = BAND_LIMIT_MAP[this.host];
         if (bandLimitList && bandLimitList.indexOf(Band) === -1) {
@@ -1019,7 +985,7 @@ export class LTEControllers {
                 UePMax,
                 EnodeBPMax: DEFAUTL_EnodeBPMax,
             };
-            this.packAndSendMsg(EnumMsgType.O_FL_LMT_TO_ENB_SYS_ARFCN_CFG, msgBody);
+            await this.packAndSendMsgAsync(EnumMsgType.O_FL_LMT_TO_ENB_SYS_ARFCN_CFG, msgBody);
             // 提前设置小区状态提升用户体验
             this.updateStatus(EnumLTEStatus.ACTIVATING);
             this._updateCellInfo({
@@ -1101,7 +1067,7 @@ export class LTEControllers {
         });
     }
 
-    activateLTEWithLastCellInfo() {
+    async activateLTEWithLastCellInfoAsync() {
         const {dlEarfcn, PLMN, Bandwidth, Band, PCI} = this._cellInfo;
         const ServingCellCfgInfo = {
             dlEarfcn,
@@ -1112,7 +1078,7 @@ export class LTEControllers {
             TAC: getRandomTAC(),
             CellId: getRandomCellID(),
         };
-        this.sendSycArfcnCfg(ServingCellCfgInfo);
+        return this.sendSycArfcnCfgAsync(ServingCellCfgInfo);
     }
 
     _handleSysModeAck(headObj, bodyObj) {
@@ -1238,7 +1204,7 @@ export class LTEControllers {
         this.updateStatus(CellState);
     }
 
-    sendEarfcnMod(dlEarfcn) {
+    async sendEarfcnModAsync(dlEarfcn) {
         if (dlEarfcn && Number.isInteger(dlEarfcn)) {
             const otherData = getOtherDataByEarfcn(dlEarfcn);
             if (!otherData) {
@@ -1254,7 +1220,7 @@ export class LTEControllers {
                     dlEarfcn, ulEarfcn, Band, CellId, PLMN, UePMax
                 }
             });
-            this.packAndSendMsg(EnumMsgType.O_FL_LMT_TO_ENB_SYS_ARFCN_MOD, {
+            await this.packAndSendMsgAsync(EnumMsgType.O_FL_LMT_TO_ENB_SYS_ARFCN_MOD, {
                 ulEarfcn,
                 dlEarfcn,
                 Band,
@@ -1403,30 +1369,8 @@ export class LTEControllers {
         this._updateCellInfo({bandPwrdereaseMap});
     }
 
-    setModEarfcnInfo(earfcnList, interval) {
-        if (earfcnList && Array.isArray(earfcnList) && interval && Number.isInteger(interval)) {
-            const bandLimitList = BAND_LIMIT_MAP[this.host];
-            if (bandLimitList) {
-                for (const earfcn of earfcnList) {
-                    if (earfcn) {
-                        const otherData = getOtherDataByEarfcn(earfcn);
-                        if (!otherData || bandLimitList.indexOf(+otherData.Band) === -1) {
-                            return;
-                        }
-                    }
-                }
-            }
-            this._updateCellInfo({dlEarfcnList: earfcnList, modInterval: interval});
-            if (interval !== this._cellInfo.modInterval && this._cellInfo.earfcnAutoModing) {
-                this.startAutoModEarfcn();
-            }
-        }
-        else {
-            this.error(`LTEController.setModEarfcnInfo invalid arguments,arg:${JSON.stringify({
-                earfcnList,
-                interval
-            })}`);
-        }
+    setModEarfcnInfo({earfcnAutoModing, dlEarfcnList, modInterval}) {
+        this._updateCellInfo({earfcnAutoModing, dlEarfcnList, modInterval});
     }
 
     /**
@@ -1443,48 +1387,41 @@ export class LTEControllers {
         return dlEarfcnList[index + 1];
     }
 
-    /**
-     * 开启自动轮询频点
-     */
-    startAutoModEarfcn() {
-        if (this._cellInfo.status.value !== EnumLTEStatus.ACTIVATED) {
-            this.warn(`startAutoModEarfcn failed, status:${this._cellInfo.status}`);
-            return;
-        }
-        if (this._cellInfo.dlEarfcnList.length === 0) {
-            this.warn(`startAutoModEarfcn failed, dlEarfcnList:${this._cellInfo.dlEarfcnList}`);
-            return;
-        }
-        if (this._cellInfo.earfcnAutoModing) {
-            if (this.autoModEarfcnProcess) {
-                clearInterval(this.autoModEarfcnProcess);
+    async checkAutoMod() {
+        const now = nowUnix();
+        if (this._cellInfo.earfcnAutoModing &&
+            now - this._cellInfo.lastModUnix > this._cellInfo.modInterval) {
+            const nextEarfcn = this._getNextEarfcnToMod();
+            switch (this._cellInfo.status.value) {
+                case EnumLTEStatus.ACTIVATED:
+                    // 如果已经激活就调用换频点接口
+                    if (this._cellInfo.dlEarfcn !== nextEarfcn) {
+                        await this.sendEarfcnModAsync(nextEarfcn);
+                        this.debug(`动态切换频点成功 now：${nextEarfcn}`);
+                        this._updateCellInfo({lastModUnix: now});
+                    }
+                    break;
+                case EnumLTEStatus.CONNECTED:
+                    const {Bandwidth} = this._cellInfo;
+                    const ServingCellCfgInfo = {
+                        dlEarfcn: nextEarfcn,
+                        PLMN: getPLMNFormEarfcn(nextEarfcn),
+                        Bandwidth: Bandwidth.value,
+                        Band: getBandFromEarfcn(nextEarfcn),
+                        PCI: getRandomPCI(),
+                        TAC: getRandomTAC(),
+                        CellId: getRandomCellID(),
+                    };
+                    this._updateCellInfo({lastModUnix: now});
+                    await this.sendSycArfcnCfgAsync(ServingCellCfgInfo);
+                    this.debug(`启动小区成功 now：${nextEarfcn}`);
+                    break;
+                default:
+                    this.warn(`小区状态异常，暂时无法轮询, status:${this._cellInfo.status.text}`);
+                    break;
             }
         }
-        this.autoModEarfcnProcess = setInterval(() => {
-            if (this._cellInfo.status.value !== EnumLTEStatus.ACTIVATED) {
-                this.warn(`device  has no dlEarfcnList, please add`);
-                return;
-            }
-            if (this._cellInfo.dlEarfcnList.length === 0) {
-                this.warn(`device  has no dlEarfcnList, please add`);
-                return;
-            }
-            const nextDlEarfcn = this._getNextEarfcnToMod();
-            if (nextDlEarfcn !== this._cellInfo.dlEarfcn) {
-                this.log(`device  auto mod earfcn from [${
-                    this._cellInfo.dlEarfcn}] to [${nextDlEarfcn}]`);
-                this.sendEarfcnMod(nextDlEarfcn);
-            }
-        }, this._cellInfo.modInterval * 1000);
-        this._updateCellInfo({earfcnAutoModing: true});
-    }
-
-    stopAutoModEarfcn() {
-        if (this.autoModEarfcnProcess) {
-            clearInterval(this.autoModEarfcnProcess);
-        }
-        this._updateCellInfo({earfcnAutoModing: false});
-    }
+    };
 
     /**
      * 发送数据
@@ -1538,24 +1475,6 @@ export class LTEControllers {
 
     _handleSelfCfgCellParaReqAck(headObj, bodyObj) {
         if (bodyObj.CfgResult === 0) {
-        }
-        else {
-        }
-    }
-
-    /**
-     * 频点配置
-     * @param {{dlEarfcn:number,PLMN:string,Bandwidth:number,Band:number,PCI:number,TAC:number,CellId:number
-     * }} ServingCellCfgInfo
-     */
-    activateWithScanNetResult(ServingCellCfgInfo) {
-        // TDD 板子扫网启动
-        if (this._cellInfo.Frame.value === EnumSysMode.TDD) {
-            this.sendSelfCfgCellParaReq(255);
-        }
-        else if (ServingCellCfgInfo && ServingCellCfgInfo.dlEarfcn) {
-            // FDD 使用手机扫网参数启动
-            this.sendSycArfcnCfg(ServingCellCfgInfo);
         }
         else {
         }

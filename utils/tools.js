@@ -41,6 +41,9 @@ export function mkdirsMultiDirSync(dirname) {
     }
 }
 
+/**
+ * @return {number} 返回当前的时间戳 单位秒
+ */
 export function nowUnix() {
     return Math.floor(new Date().getTime() / 1000);
 }

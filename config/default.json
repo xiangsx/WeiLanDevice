@@ -51,7 +51,7 @@
         "pm2": true
     },
     "lteCellInfo": {
-        "192.168.2.53": {
+        "::ffff:192.168.2.53": {
             "Frame": {
                 "value": 255,
                 "text": "TDD"
@@ -107,7 +107,7 @@
                 "ControlSubMode": 0
             }
         },
-        "192.168.2.54": {
+        "::ffff:192.168.2.54": {
             "Frame": {
                 "value": 255,
                 "text": "TDD"

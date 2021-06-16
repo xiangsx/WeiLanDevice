@@ -12,15 +12,19 @@ const LteScheduleList = [
         handle: lteSchedule => lteSchedule.syncDeviceStatus
     }, {
         enable: true,
-        // 每秒一次
+        // 每5秒一次
         schedule: '*/5 * * * * *',
         handle: lteSchedule => lteSchedule.uploadUEList
     }, {
         enable: true,
-        // 每秒一次
-        schedule: '*/20 * * * * *',
+        // 每30秒一次
+        schedule: '*/30 * * * * *',
         handle: lteSchedule => lteSchedule.uploadOfflineUE
-    },
+    },{
+        enable: true,
+        schedule: '*/1 * * * * *',
+        handle:lteSchedule => lteSchedule.startLTETimeInterval
+    }
 ];
 
 class LteSchedule {
@@ -35,6 +39,13 @@ class LteSchedule {
                 continue;
             }
             scheduleJob(schedule, handle(this));
+        }
+    }
+
+    async startLTETimeInterval() {
+        const allLteCtrl = getAllLteCtrl();
+        for (const lteCtrl of allLteCtrl) {
+            lteCtrl.timeIntervalFunc();
         }
     }
 

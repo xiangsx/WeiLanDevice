@@ -5,3 +5,4 @@ node_modules
 dist/
 logs/
 *.local.*
+default.run.json

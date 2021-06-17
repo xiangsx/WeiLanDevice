@@ -8,4 +8,4 @@ process.on('error', console.error);
 process.on('uncaughtException', console.error);
 initLteCtrl();
 lteSchedule.start();
-const server = new TCPServer(3345).startServer();
+new TCPServer(3345).startServer();

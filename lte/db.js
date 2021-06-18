@@ -1,9 +1,4 @@
-import path from 'path';
 import Config from '../config/config';
-
-const dbPath = path.join(__dirname, './ss.db');
-
-let db;
 
 export function getOfflineUEList() {
     const lenNow = Config.ueList.length;

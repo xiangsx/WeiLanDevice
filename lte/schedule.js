@@ -1,7 +1,7 @@
 import {scheduleJob} from 'node-schedule'
 import lteWS from './server/ws'
 import {getAllLteCtrl} from './tcp/LTEControllers'
-import {getOfflineUEList, saveOfflineUE} from "../store/db";
+import {getOfflineUEList, saveOfflineUE} from "./db";
 import lteCenter from "./lteCenter";
 
 const LteScheduleList = [

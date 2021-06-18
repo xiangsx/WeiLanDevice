@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start-lte": "node -r esm bin/lte.js",
+    "start-device": "node -r esm bin/device.js",
     "build": "webpack",
     "prod-install": "yarn install --prod",
     "prod-start-lte": "node dist/lte.js"

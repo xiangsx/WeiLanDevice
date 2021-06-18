@@ -1,8 +1,10 @@
 {
+    "version": 0,
     "wsServerCfg": {
         "host": "127.0.0.1",
         "port": "80",
-        "namespace": "/lte"
+        "namespace": "/lte",
+        "ctrlNamespace": "/device"
     },
     "ueList": [],
     "log": {

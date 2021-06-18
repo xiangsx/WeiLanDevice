@@ -6,3 +6,4 @@ dist/
 logs/
 *.local.*
 default.run.json
+package-lock.json

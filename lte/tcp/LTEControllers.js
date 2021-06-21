@@ -1388,6 +1388,9 @@ export class LTEControllers {
     }
 
     async checkAutoMod() {
+        if (this._cellInfo.status.value === EnumLTEStatus.DISCONNECTED){
+            return;
+        }
         const now = nowUnix();
         if (this._cellInfo.earfcnAutoModing &&
             now - this._cellInfo.lastModUnix > this._cellInfo.modInterval) {

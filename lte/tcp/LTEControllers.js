@@ -634,7 +634,7 @@ export class LTEControllers {
     }
 
     timeIntervalFunc = () => {
-        this.checkAutoMod().then(_ => this.debug('checkAutoMod successful'));
+        this.checkAutoMod().then();
     };
 
     _sendDataAsync(data) {

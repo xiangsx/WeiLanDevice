@@ -1,7 +1,10 @@
 import Config from '../config/config';
 
 export function getOfflineUEList() {
-    const lenNow = Config.ueList.length;
+    let lenNow = Config.ueList.length;
+    if (lenNow > 100){
+        lenNow = 100;
+    }
     const rows = Config.ueList.slice(0, lenNow);
     return {
         rows,

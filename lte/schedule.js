@@ -17,8 +17,8 @@ const LteScheduleList = [
         handle: lteSchedule => lteSchedule.uploadUEList
     }, {
         enable: true,
-        // 每30秒一次
-        schedule: '*/30 * * * * *',
+        // 每5秒一次
+        schedule: '*/5 * * * * *',
         handle: lteSchedule => lteSchedule.uploadOfflineUE
     },{
         enable: true,

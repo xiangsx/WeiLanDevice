@@ -1,5 +1,5 @@
 import {Emitter, EVENTS} from './events'
-import {getAllLteCtrl} from "./tcp/LTEControllers";
+import {getAllLteCtrl, initLteCtrl} from "./tcp/LTEControllers";
 import {EnumLTEStatus} from "./define/LTEProto";
 import {EnumDeviceStatus, EnumDeviceType} from "../define/device";
 import {EnumWSRoutes} from "./define/server";
@@ -10,6 +10,7 @@ import {nowUnix} from "../utils/tools";
 
 class LteCenter {
     constructor() {
+        initLteCtrl();
         this.status = {};
         this.deviceInfoChanged = true;
         this.listenCellInfoChange();
@@ -27,6 +28,7 @@ class LteCenter {
             updateTime: nowUnix(),
             deviceDetails: []
         }
+        this.updateDeviceInfo()
     }
 
     ifNeedSyncDeviceInfo = () => {
@@ -86,8 +88,8 @@ class LteCenter {
             const gcj02Point = coordtransform.wgs84togcj02(Longitude, Latitude);
             const bd09Point = coordtransform.gcj02tobd09(...gcj02Point);
             this.deviceInfo.liveGps = {
-                Longitude,
-                Latitude,
+                Longitude: bd09Point[0],
+                Latitude: bd09Point[1],
                 Altitude,
             };
         }

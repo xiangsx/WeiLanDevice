@@ -31,6 +31,11 @@
             },
             "console": {
                 "type": "console"
+            },
+            "logstash": {
+                "type": "@log4js-node/logstashudp",
+                "host": "127.0.0.1",
+                "port": 10010
             }
         },
         "categories": {
@@ -38,14 +43,16 @@
                 "appenders": [
                     "console",
                     "fileError",
-                    "fileDefault"
+                    "fileDefault",
+                    "logstash"
                 ],
                 "level": "error"
             },
             "default": {
                 "appenders": [
                     "console",
-                    "fileDefault"
+                    "fileDefault",
+                    "logstash"
                 ],
                 "level": "trace"
             }

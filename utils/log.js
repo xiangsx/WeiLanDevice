@@ -2,12 +2,22 @@
 
 import log4js from 'log4js';
 import Config from '../config/config'
+import {generateDeviceID} from "./tools";
+import {EnumDeviceType} from "../define/device";
 
 const {log: logCfg} = Config;
 
 export function initLog(filename) {
     logCfg.appenders.fileDefault.filename = `logs/${filename}/default.log`
     logCfg.appenders.fileError.filename = `logs/${filename}/error.log`
+    if (logCfg.appenders.logstash) {
+        logCfg.appenders.logstash.extraDataProvider = loggingEvent => ({
+            type: 'device',
+            tag: filename, // this will be added to the fields
+            deviceID: generateDeviceID(EnumDeviceType.LTE),
+            pid: loggingEvent.pid, // this will be added to the fields
+        })
+    }
     log4js.configure(logCfg);
 
     const errorLog = log4js.getLogger('error');

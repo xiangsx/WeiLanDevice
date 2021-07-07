@@ -634,7 +634,7 @@ export class LTEControllers {
     }
 
     timeIntervalFunc = () => {
-        this.checkAutoMod().then(_ => this.debug('checkAutoMod successful'));
+        this.checkAutoMod().then();
     };
 
     _sendDataAsync(data) {
@@ -1388,6 +1388,9 @@ export class LTEControllers {
     }
 
     async checkAutoMod() {
+        if (this._cellInfo.status.value === EnumLTEStatus.DISCONNECTED){
+            return;
+        }
         const now = nowUnix();
         if (this._cellInfo.earfcnAutoModing &&
             now - this._cellInfo.lastModUnix > this._cellInfo.modInterval) {

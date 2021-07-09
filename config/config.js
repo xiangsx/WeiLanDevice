@@ -8,27 +8,35 @@ const configLocalFilePath = defaultConfig.configLocalFilePath;
 let configRunFilePath = defaultConfig.configRunFilePath[process.env.PN];
 
 function initConfig() {
-    try {
-        for (const filePath of configLocalFilePath) {
-            if (fs.existsSync(filePath)) {
+    let runConfig = {};
+    if (fs.existsSync(configRunFilePath)) {
+        try {
+            runConfig = JSON.parse(fs.readFileSync(configRunFilePath, 'utf-8'));
+        }catch (err) {
+            console.error(err);
+        }
+    }else {
+        mkdirsMultiDirSync(path.dirname(configRunFilePath));
+    }
+    config = {
+        ...config,
+        ...runConfig,
+    };
+
+    for (const filePath of configLocalFilePath) {
+        if (fs.existsSync(filePath)) {
+            try {
                 const thisConf = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
                 config = {
                     ...config,
                     ...thisConf,
                 };
+            } catch (err){
+                console.error(err);
             }
         }
-        mkdirsMultiDirSync(path.dirname(configRunFilePath));
-        const runConfig = JSON.parse(fs.readFileSync(configRunFilePath, 'utf-8'));
-        config = {
-            ...config,
-            ...runConfig,
-        };
-    } catch (err) {
-        if (err) {
-            console.error(err);
-        }
     }
+
     fs.writeFileSync(configRunFilePath, JSON.stringify(config));
 }
 

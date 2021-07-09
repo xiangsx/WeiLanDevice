@@ -4,6 +4,7 @@ import log4js from 'log4js';
 import Config from '../config/config'
 import {generateDeviceID} from "./tools";
 import {EnumDeviceType} from "../define/device";
+import logstashudp from '@log4js-node/logstashudp'
 
 function initLog() {
     const filename = process.env.PN;
@@ -11,6 +12,7 @@ function initLog() {
     logCfg.appenders.fileDefault.filename = `logs/${filename}/default.log`
     logCfg.appenders.fileError.filename = `logs/${filename}/error.log`
     if (logCfg.appenders.logstash) {
+        logCfg.appenders.logstash.type = logstashudp;
         logCfg.appenders.logstash.extraDataProvider = loggingEvent => ({
             type: 'device',
             tag: filename, // this will be added to the fields

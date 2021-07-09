@@ -16,7 +16,6 @@
                 "keepFileExt": true,
                 "type": "dateFile",
                 "pattern": ".yyyy-MM-dd",
-                "filename": "logs/lte/error.log",
                 "compress": true,
                 "layout": {
                     "type": "pattern",

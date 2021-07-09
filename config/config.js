@@ -44,7 +44,6 @@ function setCfg(cfgObj) {
 }
 
 export default {
-    initConfig,
     ...config,
     // 如果需要动态更新配置，同时添加setter和getter方法
     get lteCellInfo() {

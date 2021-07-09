@@ -19,7 +19,8 @@ export function saveOfflineUE(list) {
     if (Config.ueList.length >= Config.maxOfflineSize) {
         Config.ueList = Config.ueList.slice(Config.ueList.length - Config.maxOfflineSize, Config.ueList.len);
     }
-    console.debug(Config.ueList.length);
+    // console.log(Config.ueList.length, Buffer.from(JSON.stringify(Config.ueList)).length,
+    //     Buffer.from(JSON.stringify(Config.ueList)).length / Config.ueList.length);
     return Config.ueList.length;
 }
 

@@ -5,9 +5,9 @@ import Config from '../config/config'
 import {generateDeviceID} from "./tools";
 import {EnumDeviceType} from "../define/device";
 
-const {log: logCfg} = Config;
-
-export function initLog(filename) {
+function initLog() {
+    const filename = process.env.PN;
+    const {log: logCfg} = Config;
     logCfg.appenders.fileDefault.filename = `logs/${filename}/default.log`
     logCfg.appenders.fileError.filename = `logs/${filename}/error.log`
     if (logCfg.appenders.logstash) {
@@ -30,3 +30,5 @@ export function initLog(filename) {
     console.warn = defaultLog.warn.bind(defaultLog);
     console.error = errorLog.error.bind(errorLog);
 }
+
+initLog();

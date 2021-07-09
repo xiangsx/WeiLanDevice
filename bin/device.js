@@ -1,4 +1,3 @@
-import {initLog} from '../utils/log';
-initLog('device');
+import '../utils/log';
 import '../utils/errHandler';
 import '../device/ws';

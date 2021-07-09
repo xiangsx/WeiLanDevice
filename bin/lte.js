@@ -1,5 +1,4 @@
-import {initLog} from '../utils/log'
-initLog('lte');
+import '../utils/log'
 import '../utils/errHandler';
 import TCPServer from '../lte/tcp/TCPServer'
 import '../lte/server/ws';

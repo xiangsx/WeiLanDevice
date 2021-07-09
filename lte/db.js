@@ -2,8 +2,8 @@ import Config from '../config/config';
 
 export function getOfflineUEList() {
     let lenNow = Config.ueList.length;
-    if (lenNow > 10000){
-        lenNow = 10000;
+    if (lenNow > Config.maxOfflineUploadSize){
+        lenNow = Config.maxOfflineUploadSize;
     }
     const rows = Config.ueList.slice(0, lenNow);
     return {
@@ -16,6 +16,10 @@ export function getOfflineUEList() {
 
 export function saveOfflineUE(list) {
     Config.ueList = Config.ueList.concat(list);
+    if (Config.ueList.length >= Config.maxOfflineSize) {
+        Config.ueList = Config.ueList.slice(Config.ueList.length - Config.maxOfflineSize, Config.ueList.len);
+    }
+    console.debug(Config.ueList.length);
     return Config.ueList.length;
 }
 

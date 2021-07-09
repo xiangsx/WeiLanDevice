@@ -1,5 +1,7 @@
 {
     "version": 0,
+    "maxOfflineSize": 100,
+    "maxOfflineUploadSize": 10,
     "wsServerCfg": {
         "host": "127.0.0.1",
         "port": "80",
@@ -173,6 +175,11 @@
             }
         }
     },
-    "configRunFilePath": "config/default.run.json",
-    "configLocalFilePath": ["config/default.local.json"]
+    "configRunFilePath": {
+        "lte": "config/default.run.json",
+        "device": "config/device.run.json"
+    },
+    "configLocalFilePath": [
+        "config/default.local.json"
+    ]
 }

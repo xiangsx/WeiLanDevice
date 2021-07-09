@@ -4,8 +4,8 @@ import defaultConfig from './default.json';
 import {mkdirsMultiDirSync} from '../utils/tools';
 
 let config = defaultConfig;
-const configRunFilePath = defaultConfig.configRunFilePath;
 const configLocalFilePath = defaultConfig.configLocalFilePath;
+let configRunFilePath = defaultConfig.configRunFilePath[process.env.PN];
 
 function initConfig() {
     try {
@@ -44,6 +44,7 @@ function setCfg(cfgObj) {
 }
 
 export default {
+    initConfig,
     ...config,
     // 如果需要动态更新配置，同时添加setter和getter方法
     get lteCellInfo() {

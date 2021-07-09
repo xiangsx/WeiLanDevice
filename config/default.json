@@ -12,10 +12,12 @@
     "log": {
         "appenders": {
             "fileError": {
-                "type": "file",
-                "filename": "logs/error.log",
+                "daysToKeep": 7,
+                "type": "dateFile",
+                "keepFileExt": true,
+                "filename": "logs/lte/error.log",
                 "layout": {
-                    "type":"pattern",
+                    "type": "pattern",
                     "pattern": "[%r] [%p] - %m"
                 }
             },

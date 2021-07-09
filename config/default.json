@@ -1,7 +1,7 @@
 {
     "version": 0,
-    "maxOfflineSize": 100,
-    "maxOfflineUploadSize": 10,
+    "maxOfflineSize": 100000,
+    "maxOfflineUploadSize": 10000,
     "wsServerCfg": {
         "host": "127.0.0.1",
         "port": "80",

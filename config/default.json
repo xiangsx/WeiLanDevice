@@ -13,9 +13,11 @@
         "appenders": {
             "fileError": {
                 "daysToKeep": 7,
-                "type": "dateFile",
                 "keepFileExt": true,
+                "type": "dateFile",
+                "pattern": ".yyyy-MM-dd",
                 "filename": "logs/lte/error.log",
+                "compress": true,
                 "layout": {
                     "type": "pattern",
                     "pattern": "[%r] [%p] - %m"
@@ -26,7 +28,6 @@
                 "keepFileExt": true,
                 "type": "dateFile",
                 "pattern": ".yyyy-MM-dd",
-                "filename": "logs/all/default.log",
                 "compress": true,
                 "layout": {
                     "type":"pattern",

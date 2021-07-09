@@ -9,19 +9,14 @@ let configRunFilePath = defaultConfig.configRunFilePath[process.env.PN];
 
 function initConfig() {
     try {
-        let localConfig = {};
         for (const filePath of configLocalFilePath) {
             if (fs.existsSync(filePath)) {
                 const thisConf = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-                localConfig = {
-                    ...localConfig,
+                config = {
+                    ...config,
                     ...thisConf,
                 };
             }
-        }
-        config = {
-            ...config,
-            ...localConfig,
         }
         mkdirsMultiDirSync(path.dirname(configRunFilePath));
         const runConfig = JSON.parse(fs.readFileSync(configRunFilePath, 'utf-8'));

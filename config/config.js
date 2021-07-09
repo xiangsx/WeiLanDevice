@@ -19,12 +19,15 @@ function initConfig() {
                 };
             }
         }
+        config = {
+            ...config,
+            ...localConfig,
+        }
         mkdirsMultiDirSync(path.dirname(configRunFilePath));
         const runConfig = JSON.parse(fs.readFileSync(configRunFilePath, 'utf-8'));
         config = {
-            ...defaultConfig,
+            ...config,
             ...runConfig,
-            ...localConfig,
         };
     } catch (err) {
         if (err) {

@@ -750,10 +750,10 @@ class LTEProto {
     GPS_LOCATION_QUERY_ACK = new MsgStruct([
         [STRUCT_TYPE.word32Ule,'Paraoff1'],
         // 经度lng
-        [STRUCT_TYPE.floatle,'Longitude'],
+        [STRUCT_TYPE.doublele,'Longitude'],
         // 纬度lat
-        [STRUCT_TYPE.floatle,'Latitude'],
-        [STRUCT_TYPE.floatle,'Altitude'],
+        [STRUCT_TYPE.doublele,'Latitude'],
+        [STRUCT_TYPE.doublele,'Altitude'],
         [STRUCT_TYPE.word32Ule,'RateOfPro'],
         [STRUCT_TYPE.word32Ule,'Paraoff2'],
     ]);

@@ -312,6 +312,7 @@ export class LTEControllers {
             () => {
                 this.sendBaseInfoQuery(EnumBaseInfoType.SOFTWARE_VERSION);
             },
+            this.sendGpsLocationQuery
         ];
         for (let i = 0; i < funList.length; i += 1) {
             setTimeout(() => {

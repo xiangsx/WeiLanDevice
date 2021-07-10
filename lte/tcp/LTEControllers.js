@@ -160,12 +160,10 @@ export class LTEControllers {
     }
 
     _initLog = () => {
-        const logMethodList = ['debug', 'log', 'warn', 'error']
-        for (let logMethod of logMethodList) {
-            this[logMethod] = (...rest) => {
-                return console[logMethod](`[${this.host}]`, ...rest);
-            };
-        }
+        this.log = (...rest) => console.log(`[${this.host}] ${rest.join(' ')}`);
+        this.debug = (...rest) => console.debug(`[${this.host}] ${rest.join(' ')}`);
+        this.warn = (...rest) => console.warn(`[${this.host}] ${rest.join(' ')}`);
+        this.error = (...rest) => console.error(`[${this.host}] ${rest.join(' ')}`);
     };
 
     /**

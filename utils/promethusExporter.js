@@ -18,7 +18,7 @@ gateway.pushAdd({jobName: 'device-exporter'}, function (err, resp, body) {
         console.error(err);
     }
     else {
-        console.log(JSON.stringify(resp), JSON.stringify(body));
+        console.log(`promethus init successfully!!!`);
     }
 }); //Add metric and overwrite old ones
 const deviceID = generateDeviceID(EnumDeviceType.LTE);

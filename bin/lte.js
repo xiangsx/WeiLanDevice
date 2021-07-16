@@ -1,5 +1,6 @@
 import '../utils/log'
 import '../utils/errHandler';
+import '../utils/promethusExporter';
 import TCPServer from '../lte/tcp/TCPServer'
 import '../lte/server/ws';
 import lteSchedule from '../lte/schedule'

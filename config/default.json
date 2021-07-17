@@ -8,7 +8,8 @@
         "namespace": "/lte",
         "ctrlNamespace": "/device"
     },
-    "publishGatewayPort": 9091,
+    "pushGatewayPort": 9091,
+    "pushInterval": 10,
     "ueList": [],
     "log": {
         "appenders": {
